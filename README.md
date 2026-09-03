@@ -15,7 +15,7 @@ The data layers refresh as you pan and zoom the map.
 ## Live URL
 
 ```
-https://clarksonwoods.github.io/Shipham-Biodiversity-Map/
+https://dusky-nembrotha.github.io/Shipham-Biodiversity-Map/
 ```
 ---
 
@@ -23,11 +23,11 @@ https://clarksonwoods.github.io/Shipham-Biodiversity-Map/
 
 The map is a single file, `index.html`, so GitHub Pages can host it directly.
 
-1. Create a GitHub repository (e.g. `shipham-wild`).
+1. Create a GitHub repository (e.g. `Shipham-Biodiversity-Map`).
 2. Upload `index.html` to it (drag-and-drop on the GitHub website is fine).
 3. Go to **Settings → Pages**.
 4. Under *Build and deployment*: **Source: Deploy from a branch**, branch **main**, folder **/ (root)**, Save.
-5. Wait a minute, then visit `https://YOUR-USERNAME.github.io/shipham-wild/`.
+5. Wait a minute, then visit `https://YOUR-USERNAME.github.io/Shipham-Biodiversity-Map/`.
 
 The map is now live and anyone can view it. Sightings, SSSIs and reserves all
 work straight away.
