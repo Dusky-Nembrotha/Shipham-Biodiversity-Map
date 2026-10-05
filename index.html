@@ -2,7 +2,7 @@
 <html lang="en-GB">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>Shipham Biodiversity Map</title>
 <meta name="description" content="A community map of biodiversity and conservation projects in and around Shipham parish, Somerset." />
 
@@ -273,7 +273,7 @@
     </div>
     <div style="border-top:1px solid var(--line);margin:8px 8px 0;padding-top:8px">
       <button id="adminBtn" style="width:100%;border:1px solid var(--line);background:#fff;color:var(--muted);padding:7px;border-radius:9px;font-size:.73rem;font-weight:600;cursor:pointer;font-family:inherit">Manage as admin</button>
-      <div style="text-align:center;font-size:.62rem;color:var(--muted);margin-top:6px;opacity:.7">build 2026-06-15-z</div>
+      <div style="text-align:center;font-size:.62rem;color:var(--muted);margin-top:6px;opacity:.7">build 2026-09-11</div>
     </div>
   </div>
 </aside>
@@ -405,6 +405,11 @@ const mtReady = MAPTILER_KEY && !MAPTILER_KEY.includes("YOUR_");
 /* ---------- Map ---------- */
 const map = L.map("map", { zoomControl:false, maxZoom:20 }).setView([SHIPHAM.lat, SHIPHAM.lng], SHIPHAM.zoom);
 L.control.zoom({ position:"bottomleft" }).addTo(map);
+/* Keep the map filling the window after a rotate, a window resize, or the on-screen
+   keyboard opening. Leaflet watches window resize itself but not visualViewport. */
+const refitMap = () => map.invalidateSize({pan:false});
+addEventListener("orientationchange", ()=>setTimeout(refitMap,200));
+if(window.visualViewport) visualViewport.addEventListener("resize", refitMap);
 // Background context panes (below the default overlayPane=400 used by parish, SSSI, projects, PRoW):
 map.createPane("habitatsPane"); map.getPane("habitatsPane").style.zIndex = 350;   // habitats lowest
 map.createPane("floodPane");    map.getPane("floodPane").style.zIndex    = 360;   // flood just above habitats
