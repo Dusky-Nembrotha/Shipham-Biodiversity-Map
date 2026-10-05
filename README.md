@@ -96,14 +96,25 @@ projects appear only in the contributor's own browser.
 
 ### Keeping the keys safe
 
-Both keys are visible to anyone who views the page — that's unavoidable for a
-static site, so **restrict them by domain in the provider's dashboard** instead.
+Both keys are visible to anyone who views the page — unavoidable for a static
+site. The two providers differ in what you can do about it.
 
-- **MapTiler** — already restricted to `dusky-nembrotha.github.io`. ✅
-- **OS Data Hub** — currently **unrestricted**: the key works from any site, so
-  anyone can lift it and spend the free-tier transactions. Add a referer
-  restriction for `dusky-nembrotha.github.io` in the OS Data Hub project settings,
-  and consider regenerating the key afterwards.
+- **MapTiler** — restricted to `dusky-nembrotha.github.io` in the MapTiler
+  dashboard. Verified: the key returns 403 from any other referer. ✅
+- **OS Data Hub** — **OS does not offer referer or domain restrictions.** The key
+  works from anywhere and that cannot be fixed from the dashboard or the code.
+
+Because the OS key can't be locked down, the protection is billing-side:
+
+1. **Keep no payment card on the OS account.** Without one, exceeding the £1,000
+   monthly free premium allowance simply pauses premium access until the next
+   month. With a valid card on file, OS bills you for the overage instead.
+2. **Watch the usage dashboard** for transactions you didn't cause.
+3. **Regenerate the key** (Actions → Regenerate API Key) if usage looks wrong,
+   and update `OS_API_KEY` here afterwards.
+4. If the map ever needs stronger protection, the real fix is a proxy — route
+   tile requests through a small backend that holds the key — at the cost of
+   added latency on every tile.
 
 ---
 
