@@ -384,7 +384,9 @@ const osReady = OS_API_KEY && !OS_API_KEY.includes("YOUR_");
 const mtReady = MAPTILER_KEY && !MAPTILER_KEY.includes("YOUR_");
 
 /* ---------- Small helpers ---------- */
-const esc = s => (s==null?"":String(s)).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const ENT={"&amp;":"&","&lt;":"<","&gt;":">","&quot;":'"',"&#39;":"'","&apos;":"'","&nbsp;":" "};
+const deent = s => String(s==null?"":s).replace(/&(amp|lt|gt|quot|#39|apos|nbsp);/g,m=>ENT[m]);
+const esc = s => deent(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const URL_RE = /\b((?:https?:\/\/|www\.)[^\s<]+[^\s<.,;:!?)\]'"])/gi;
 const linkify = s => esc(s).replace(URL_RE, m=>{
   const href = m.startsWith("www.") ? "https://"+m : m;
@@ -409,9 +411,10 @@ addEventListener("orientationchange", ()=>setTimeout(refitMap,200));
 if(window.visualViewport) visualViewport.addEventListener("resize", refitMap);
 
 /* Background panes, below the default overlayPane (400) used by points and lines. */
-map.createPane("fillPane"); map.getPane("fillPane").style.zIndex = 350;   // area washes
+map.createPane("fillPane"); map.getPane("fillPane").style.zIndex = 350;   // habitat washes
 map.createPane("wmsPane");  map.getPane("wmsPane").style.zIndex  = 360;   // raster overlays
-map.createPane("linePane"); map.getPane("linePane").style.zIndex = 420;   // paths, boundaries
+map.createPane("areaPane"); map.getPane("areaPane").style.zIndex = 380;   // designation outlines
+map.createPane("linePane"); map.getPane("linePane").style.zIndex = 420;   // lines and points, always clickable
 
 /* ---------- Base maps ---------- */
 const satLayer = mtReady
@@ -894,10 +897,10 @@ const LAYERS = {
   lnr:         {f:"lnr",         t:"Local nature reserves",    s:"Natural England",          c:"#00897B", kind:"area", n:["NAME"], designation:"Local nature reserve"},
   nnr:         {f:"nnr",         t:"National nature reserve",  s:"Natural England",          c:"#00695C", kind:"area", n:["NAME"], designation:"National nature reserve"},
   sac:         {f:"sac",         t:"Special Areas of Conservation", s:"European designation · Natural England", c:"#7B1FA2", kind:"area", n:["SAC_NAME","NAME"]},
-  "priority-habitats": {f:"priority-habitats", t:"Priority habitats", s:"Habitat inventory · Natural England", c:"#43A047", kind:"wash", colorBy:["Main_Habit","mainhabs","MAIN_HABIT"], n:["Main_Habit","mainhabs"]},
-  "ancient-woodland":  {f:"ancient-woodland",  t:"Ancient woodland", s:"Continuously wooded since 1600 · NE", c:"#1B5E20", kind:"wash", n:["NAME","THEME"]},
-  orchards:    {f:"orchards",    t:"Traditional orchards",     s:"Priority habitat · Natural England", c:"#EF6C00", kind:"wash", n:["NAME"]},
-  "wood-pasture":{f:"wood-pasture",t:"Wood pasture & parkland", s:"Natural England",         c:"#8D6E63", kind:"wash", n:["NAME"]},
+  "priority-habitats": {f:"priority-habitats", t:"Priority habitats", s:"Habitat inventory · Natural England", c:"#43A047", kind:"wash", colorBy:["MainHabs"], n:["MainHabs"]},
+  "ancient-woodland":  {f:"ancient-woodland",  t:"Ancient woodland", s:"Continuously wooded since 1600 · NE", c:"#1B5E20", kind:"wash", n:["THEMNAME","NAME"]},
+  orchards:    {f:"orchards",    t:"Traditional orchards",     s:"Priority habitat · Natural England", c:"#EF6C00", kind:"wash", n:["Prihabtxt"]},
+  "wood-pasture":{f:"wood-pasture",t:"Wood pasture & parkland", s:"Natural England",         c:"#8D6E63", kind:"wash", n:["MainHabs"]},
   lnrs:        {f:"lnrs",        t:"Nature recovery (LNRS)",   s:"Somerset habitat priority areas", c:"#4E8E63", kind:"wash", fillProp:"fill", n:["cat"],
                 attribution:'Somerset LNRS &copy; <a href="https://www.somersetwildlife.org/" target="_blank" rel="noopener">Somerset Wildlife Trust</a>'},
   "nature-projects":{f:"nature-projects", t:"Nature recovery project", s:"Natural England", c:"#2E7D32", kind:"area", n:["Project_Na","NAME"]},
@@ -906,7 +909,7 @@ const LAYERS = {
 
   /* --- landscape & access --- */
   "national-landscape":{f:"national-landscape", t:"Mendip Hills National Landscape", s:"formerly AONB · Natural England", c:"#6A1B9A", kind:"area", faint:true, n:["NAME"]},
-  "open-access":   {f:"open-access",   t:"Open access land",   s:"CRoW Act 2000 · Natural England", c:"#558B2F", kind:"wash", n:["NAME"]},
+  "open-access":   {f:"open-access",   t:"Open access land",   s:"CRoW Act 2000 · Natural England", c:"#558B2F", kind:"wash", n:[]},
   "common-land":   {f:"common-land",   t:"Registered common land", s:"CRoW Act 2000 · Natural England", c:"#827717", kind:"wash", n:["NAME","REF"]},
   prow:        {f:"prow",        t:"Public rights of way",     s:"footpaths, bridleways & byways", c:"#2EE65C", kind:"line", dash:"6 6", n:["ROW_TYPE"]},
 
@@ -930,7 +933,7 @@ const LAYERS = {
                       url:"https://environment.data.gov.uk/spatialdata/nafra2-risk-of-flooding-from-surface-water/wms",
                       wms:"rofsw", opacity:.75, attribution:"&copy; Environment Agency",
                       bounds:[[51.27,-2.87],[51.36,-2.72]]},
-  "osm-caves":     {f:"osm-caves",     t:"Caves & swallets",   s:"Mendip karst · OSM",      c:"#37474F", kind:"point", n:["name","natural"]},
+  "osm-caves":     {f:"osm-caves",     t:"Caves & swallets",   s:"Mendip karst · OSM",      c:"#37474F", kind:"point", n:["name"]},
   "osm-cliffs-rock":{f:"osm-cliffs-rock", t:"Cliffs & rock",   s:"OpenStreetMap",           c:"#6D4C41", kind:"line", n:["name","natural"]},
   "osm-springs":   {f:"osm-springs",   t:"Springs",            s:"OpenStreetMap",           c:"#0288D1", kind:"point", n:["name","natural"]},
 
@@ -1016,14 +1019,14 @@ const GROUPS = [
     blurb:"The everyday village: halls, shops, playing fields, benches, footpaths — and projects people have added.",
     tagline:"Facilities · footpaths · community projects",
     icon:'<path d="M3 21h18M6 21V9l6-5 6 5v12"/><path d="M10 21v-5h4v5"/>',
-    base:"os", add:true,
+    base:"os",
     sections:[
-      ["Community", ["osm-community-buildings","projects"]],
+      ["Community", ["osm-community-buildings"]],
       ["Services & recreation", ["osm-shops-pubs","osm-recreation","osm-street-furniture"]],
       ["Getting about", ["prow","osm-viewpoints"]],
       ["Risk & water", ["flood","osm-water"]]
     ],
-    on:["osm-community-buildings","osm-shops-pubs","osm-recreation","projects"],
+    on:["osm-community-buildings","osm-shops-pubs","osm-recreation"],
     highlight:{layer:"osm-community-buildings", title:"Community buildings", name:["name"], sub:["amenity"]} }
 ];
 
@@ -1043,12 +1046,33 @@ function habColor(name){
   if(!(name in _palMap)){ _palMap[name]=_pal[_palI%_pal.length]; _palI++; }
   return _palMap[name];
 }
-const HIDE=/^(fill|cat|OBJECTID|GlobalID|Shape|FID|Easting|Northing|NGR|CaptureScale)/i;
-const prettyKey = k => k.replace(/_/g," ").replace(/\b\w/g,c=>c.toUpperCase())
+const HIDE=/^(fill|cat|OBJECTID|GlobalID|Shape|FID|Easting|Northing|CaptureScale|UID|Version|THEMID|THEME|PERIMETER|X_COORD|Y_COORD|ListEntry|HYPERLINK|REF_CODE|MEASURE|LABEL|HabCodes|SHAPE_|objectid|hyperlink|gml_id|ogc_fid|Incid|Habdefver|PriDet|Descrip|UNIQUEID|MAPPINGARE|CACHAIR|ISSU|LATITUDE|LONGITUDE|GRID_REF|SAC_CODE|NGR|ROW_ID|SHAPE|InterQual|S\\d|Orch|Habdef|Mapped|Confid)/i;
+/* Values arrive as raw tags, epoch milliseconds and long floats; make them readable. */
+function prettyVal(k,v){
+  if(typeof v==="number"){
+    if(/date$/i.test(k) && Math.abs(v)>1e10)
+      return new Date(v).toLocaleDateString("en-GB",{year:"numeric",month:"long",day:"numeric"});
+    return (Math.round(v*100)/100).toLocaleString("en-GB");
+  }
+  const t=String(v).trim();
+  if(/^[a-z][a-z0-9_]*$/.test(t)) return t.replace(/_/g," ").replace(/^./,c=>c.toUpperCase());
+  return t;
+}
+const KEYNAME={AreaHa:"Area (ha)",area_ha:"Area (ha)",AREA:"Area (ha)",SAC_AREA:"Area (ha)",
+  MainHabs:"Habitat",THEMNAME:"Type",Prihabtxt:"Habitat",CL_NUMBER:"Common land no.",
+  MAPSTATUS:"Status",AUTHORITY:"Authority",DATESIGNED:"Registered",OC:"Open country",
+  RCL:"Registered common",S16:"Dedicated land",
+  PrimSource:"Source",ROW_TYPE:"Path",SchedDate:"Scheduled",ListDate:"Listed",Grade:"Grade",
+  CONTACT_NO:"Contact",STATUS:"Status",natural:"Feature",amenity:"Type",leisure:"Type",
+  historic:"Type",man_made:"Type",tourism:"Type",shop:"Shop",waterway:"Watercourse",place:"Place"};
+const prettyKey = k => KEYNAME[k] || k.replace(/_/g," ").replace(/\b\w/g,c=>c.toUpperCase())
                         .replace(/\bUrl\b/i,"Link").replace(/\bHab\b/i,"Habitat");
+const TAGKEYS=["natural","historic","amenity","leisure","man_made","tourism","shop","waterway","place"];
 function titleOf(def,p){
-  for(const k of (def.n||[])) if(p[k]) return tidyName(p[k]);
-  for(const k of ["name","Name","NAME"]) if(p[k]) return tidyName(p[k]);
+  for(const k of (def.n||[])) if(p[k] && String(p[k]).trim()) return tidyName(p[k]);
+  for(const k of ["name","Name","NAME"]) if(p[k] && String(p[k]).trim()) return tidyName(p[k]);
+  for(const k of TAGKEYS) if(p[k])             // "cave_entrance" -> "Cave entrance"
+    return String(p[k]).replace(/_/g," ").replace(/^./,c=>c.toUpperCase());
   return def.t;
 }
 function featurePopup(def,p){
@@ -1057,9 +1081,10 @@ function featurePopup(def,p){
   let n=0;
   for(const k in p){
     if(HIDE.test(k) || n>=7) continue;
-    const v=p[k]; if(v==null||v==="") continue;
-    if((def.n||[]).includes(k) && tidyName(v)===title) continue;
-    rows+=`<div style="margin-top:3px"><b style="color:var(--muted);font-weight:600">${esc(prettyKey(k))}:</b> ${linkify(v)}</div>`;
+    const v=p[k]; if(v==null||String(v).trim()==="") continue;
+    const pv=prettyVal(k,v);
+    if(String(pv).toLowerCase()===String(title).toLowerCase()) continue;
+    rows+=`<div style="margin-top:3px"><b style="color:var(--muted);font-weight:600">${esc(prettyKey(k))}:</b> ${linkify(pv)}</div>`;
     n++;
   }
   const link = def.link && p[def.link] ? `<div style="margin-top:7px"><a href="${esc(p[def.link])}" target="_blank" rel="noopener">More detail →</a></div>` : "";
@@ -1072,7 +1097,7 @@ function styleFor(def){
     const col = def.fillProp&&p[def.fillProp] ? p[def.fillProp]
               : (def.colorBy ? habColor(def.colorBy.map(k=>p[k]).find(Boolean)) : def.c);
     return {pane:"fillPane",stroke:false,fillColor:col,fillOpacity:.55}; };
-  return f=>({pane:"linePane",color:def.c,weight:2,fillColor:def.c,fillOpacity:def.faint?.07:.18});
+  return f=>({pane:"areaPane",color:def.c,weight:2,fillColor:def.c,fillOpacity:def.faint?.07:.18});
 }
 /* Attribution is a licence condition for several of these sources — OpenStreetMap's
    ODbL in particular requires it — so each layer carries its own credit. */
@@ -1106,7 +1131,7 @@ function layerOf(id){
     return built[id]=L.tileLayer.wms(d.url,o);
   }
   const gj=L.geoJSON(null,{
-    pane: d.kind==="wash" ? "fillPane" : "linePane",
+    pane: d.kind==="wash" ? "fillPane" : (d.kind==="area" ? "areaPane" : "linePane"),
     attribution: attribFor(id,d),
     style: styleFor(d),
     pointToLayer:(f,ll)=>L.circleMarker(ll,{pane:"linePane",radius:d.small?4:6,color:"#fff",weight:1.6,
@@ -1268,9 +1293,14 @@ async function loadParish(){
   try{
     const r=await fetch(DATA+"parish.geojson"); const gj=await r.json();
     parishFeature=gj.features[0];
-    L.geoJSON(gj,{pane:"linePane",style:{color:"#ffffff",weight:6,opacity:.85,fill:false}}).addTo(parishGroup);
-    L.geoJSON(gj,{pane:"linePane",style:{color:"#8E4A77",weight:3,opacity:1,dashArray:"9 6",fill:false}})
-      .bindTooltip("Shipham civil parish (Shipham, Rowberrow & Star)",{sticky:true}).addTo(parishGroup);
+    const rings=[];
+    (function walk(c,d){ if(d===0){ rings.push(c); return; } c.forEach(x=>walk(x,d-1)); })(
+      parishFeature.geometry.coordinates, parishFeature.geometry.type==="Polygon" ? 1 : 2);
+    const outline={type:"Feature",properties:{},geometry:{type:"MultiLineString",coordinates:rings}};
+    L.geoJSON(outline,{pane:"linePane",interactive:false,
+      style:{color:"#ffffff",weight:6,opacity:.85}}).addTo(parishGroup);
+    L.geoJSON(outline,{pane:"linePane",style:{color:"#8E4A77",weight:3,opacity:1,dashArray:"9 6"}})
+      .bindTooltip("Shipham civil parish (Shipham, Rowberrow &amp; Star)").addTo(parishGroup);
     let W=180,S=90,E=-180,N=-90;
     (function walk(c){ if(typeof c[0]==="number"){ W=Math.min(W,c[0]);E=Math.max(E,c[0]);S=Math.min(S,c[1]);N=Math.max(N,c[1]); }
       else c.forEach(walk); })(parishFeature.geometry.coordinates);
