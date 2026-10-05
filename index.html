@@ -401,6 +401,7 @@ function pickName(p){ for(const k in p){ if(/(sssi|lnr).*name|^name$|^par\d*nm$/
 const map = L.map("map", { zoomControl:false, maxZoom:20, preferCanvas:true })
              .setView([SHIPHAM.lat, SHIPHAM.lng], SHIPHAM.zoom);
 L.control.zoom({ position:"bottomleft" }).addTo(map);
+window.__map = map;   // for ?debug=1 measurements
 /* Keep the map filling the window after a rotate, a window resize, or the on-screen
    keyboard opening. Leaflet watches window resize itself but not visualViewport. */
 const refitMap = () => map.invalidateSize({pan:false});
@@ -1292,6 +1293,43 @@ addEventListener("hashchange",()=>{
 });
 
 } /* ===== end initApp ===== */
+
+/* ---- ?debug=1 : measure the real elements on the real page, on the real device ----
+   Three rounds of guessing from screenshots got this wrong, so this reports what the
+   browser actually computed rather than what anything looks like. ---- */
+if(/[?&]debug=1/.test(location.search)) addEventListener("load",()=>setTimeout(()=>{
+  const r=el=>{ if(!el) return "missing"; const b=el.getBoundingClientRect();
+    return Math.round(b.width)+" x "+Math.round(b.height)+" at ("+Math.round(b.left)+","+Math.round(b.top)+")"; };
+  const cs=el=>{ if(!el) return ""; const c=getComputedStyle(el);
+    return c.position+" "+c.width+"x"+c.height+" inset:"+c.top+"/"+c.right+"/"+c.bottom+"/"+c.left; };
+  const m=document.getElementById("map"), b=document.body, h=document.documentElement;
+  const mapPane=document.querySelector(".leaflet-map-pane");
+  const lines=[
+    ["window.inner",       innerWidth+" x "+innerHeight],
+    ["documentElement",    h.clientWidth+" x "+h.clientHeight],
+    ["body rect",          r(b)],
+    ["body computed",      cs(b)],
+    ["#map rect",          r(m)],
+    ["#map computed",      cs(m)],
+    ["leaflet pane rect",  r(mapPane)],
+    ["leaflet getSize",    (window.__map? window.__map.getSize().x+" x "+window.__map.getSize().y : "n/a")],
+    ["#landing rect",      r(document.getElementById("landing"))],
+    ["panel rect",         r(document.getElementById("panel"))],
+    ["devicePixelRatio",   devicePixelRatio],
+    ["visualViewport",     visualViewport? Math.round(visualViewport.width)+" x "+Math.round(visualViewport.height)+" scale="+visualViewport.scale : "n/a"],
+    ["VERDICT",            m && Math.abs(m.getBoundingClientRect().width-innerWidth)<3 ? "#map fills the window" : "#map is SHORT of the window"]
+  ];
+  const d=document.createElement("div");
+  d.style.cssText="position:fixed;left:8px;bottom:8px;z-index:99999;max-width:94vw;background:rgba(255,255,255,.97);"
+    +"border:2px solid #D81B83;border-radius:10px;padding:10px 12px;font:13px/1.45 ui-monospace,Menlo,monospace;"
+    +"white-space:pre;overflow:auto;max-height:70vh;box-shadow:0 6px 20px rgba(0,0,0,.25)";
+  const txt=lines.map(x=>(x[0]+"                    ").slice(0,21)+" : "+x[1]).join("\n");
+  d.textContent=txt;
+  const btn=document.createElement("button");
+  btn.textContent="Copy"; btn.style.cssText="display:block;margin-top:8px;font:600 14px system-ui;padding:8px 14px;border-radius:8px;border:1px solid #ccc;background:#fff";
+  btn.onclick=()=>{ navigator.clipboard && navigator.clipboard.writeText(txt).then(()=>alert("Copied")); };
+  d.appendChild(btn); document.body.appendChild(d);
+},2500));
 
 /* ================= BOOTSTRAP: Leaflet + marker clustering ================= */
 function loadScript(urls){
