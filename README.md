@@ -1,177 +1,155 @@
-# Shipham Wild — Community Biodiversity Map
+# Shipham Parish Maps
 
-A friendly map of nature and conservation across **Shipham, Rowberrow and Star**.
-Anyone can explore what's already there, and add a project of their own.
+Five community maps of **Shipham, Rowberrow and Star** — the nature, landscape,
+geology, history and everyday fabric of the parish, all in one place.
 
-**Live:** <https://dusky-nembrotha.github.io/Shipham-Biodiversity-Map/>
+**Open the maps:** <https://dusky-nembrotha.github.io/Shipham-Biodiversity-Map/>
 
-The whole map is one file, `index.html`, served by GitHub Pages. Editing that
-file and pushing to `main` updates the live site within a minute or two.
+Everything is free to use, needs no sign-in, and works on a phone, tablet or
+computer.
 
 ---
 
-## What's on the map
+## The five maps
 
-Everything below loads on its own — no sign-in, no setup.
+Pick one from the front page. Each opens with its own backdrop and its own set of
+layers, so you only ever see what's relevant to what you came for.
 
-### Always-on layers
-
-| Layer | Source | Notes |
+| Map | What it shows | Opens on |
 |---|---|---|
-| **Parish boundary** | ONS open data | Shipham civil parish (Shipham, Rowberrow & Star). The map zooms to fit it on load. |
-| **Protected wildlife sites** | Natural England | SSSIs reaching within **2.5 km** of the parish. |
-| **Local nature reserves** | Natural England | LNRs within **2.5 km** — nearest are Cheddar Valley Railway Walk and Sladers Leigh. |
-| **Recent wildlife sightings** | iNaturalist API | Up to 1,000 recent verifiable records in a fixed box around the parish, clustered. Falls back to iNaturalist's tile layer if the API can't be reached. |
-| **Conservation projects** | This map's contributors | Areas and points people have drawn and described, with photos. |
+| 🌿 **Biodiversity** | Protected wildlife sites, habitats, ancient woodland, orchards, nature recovery areas — and wildlife people have recorded in the last few weeks | Satellite + OS |
+| 🏞️ **Landscape & Heritage** | The Mendip Hills National Landscape, conservation areas, listed buildings, scheduled monuments, and where you have a right to walk | OS map |
+| 🪨 **Geology** | The Carboniferous limestone beneath the parish, and the caves and swallets it has dissolved into | LiDAR terrain |
+| 🏛️ **History** | Monuments, old mine workings and village shape — drawn over the 1880s Ordnance Survey | Old OS (1880s) |
+| 🏡 **Parish Assets** | Halls, shops, playing fields, benches, post boxes, footpaths, flood risk and community projects | OS map |
 
-### Context layers (off unless noted)
+---
 
-| Layer | Source | Notes |
+## Using the maps
+
+**Switch layers on and off** in the *What's on the map* panel on the right. Each
+layer loads only when you tick it, so the map stays quick even though there are
+dozens available. The number beside each layer tells you how many features are in
+the parish area.
+
+**Tap anything** on the map — a wood, a listed building, a cave, a footpath — for
+a panel of detail about it. Protected sites also pull in a photograph and summary
+from Wikipedia where one exists.
+
+**Change the backdrop** with the *Base map* buttons. All five backdrops are
+available on every map, so you can put, say, nature sites over the 1880s survey,
+or caves over the bare-earth LiDAR terrain.
+
+- **Satellite + OS** — aerial imagery with OS detail over the top
+- **OS map** — the familiar Ordnance Survey Outdoor style
+- **Satellite** — aerial imagery with place labels
+- **LiDAR terrain** — bare-earth laser survey; superb for earthworks, old
+  quarries and the shape of the land under the trees
+- **Old OS (1880s)** — the 25-inch survey, showing the parish before the car
+
+**The side panel** lists the highlights of whichever map you're on — named caves,
+listed buildings, protected sites — and jumps you straight to them. On the
+Biodiversity map it shows recent wildlife photographs from nearby instead.
+
+**On a phone**, both panels start folded up. Tap a heading to open it.
+
+---
+
+## Adding your own project
+
+On the **Biodiversity** and **Parish Assets** maps, the *Add your project* button
+lets anyone put a conservation or community project on the map.
+
+1. Tap **Add your project**.
+2. Aim the crosshair and tap **Add point**. One point marks a single spot; three
+   or more draw an area. **Undo** removes the last point, **Finish** completes it.
+3. Give it a name and describe what's happening, why it matters, and how people
+   can get involved. Add photographs if you have them.
+4. **Save project**.
+
+It appears for everyone straight away. You can edit or delete anything you added
+from the same device and browser — your claim on it is stored privately there, so
+clearing your browser data will cut the link.
+
+Projects are reviewed by the parish, and anything unsuitable can be removed.
+
+---
+
+## Where the information comes from
+
+Nearly everything here is national or community open data. **None of it is
+authoritative for legal purposes** — for property boundaries, rights of way
+disputes, planning or flood insurance, always consult the definitive source.
+
+### Data layers
+
+| Layer(s) | Source | Licence |
 |---|---|---|
-| **Habitats** | `shipham-habitats.geojson` in this repo | Priority habitats, woodland and tree groups. Loaded only when switched on. |
-| **Surface water** | Environment Agency WMS | Flood risk from surface water, drawn only over the Shipham area. |
-| **Public rights of way** | `shipham-prow.geojson` in this repo | Footpaths, bridleways and byways. **On by default.** |
-| **Nature recovery (LNRS)** | Somerset Wildlife Trust iShare WFS | Somerset Local Nature Recovery Strategy habitat priority areas, fetched live as GML and reprojected from British National Grid in the browser. Included where they reach within 500 m of the parish. |
+| SSSIs, local & national nature reserves, Special Areas of Conservation, priority habitats, ancient woodland, traditional orchards, wood pasture, open access land, registered common land, Mendip Hills National Landscape, nature recovery projects | **Natural England** | [Open Government Licence v3](https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/) · contains Ordnance Survey data © Crown copyright and database right |
+| Listed buildings, listed building extents, scheduled monuments, conservation areas | **Historic England** (National Heritage List for England) | [Open Government Licence v3](https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/) · © Historic England · contains OS data © Crown copyright |
+| Civil parish boundary | **Office for National Statistics** | [Open Government Licence v3](https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/) · contains OS data © Crown copyright |
+| Somerset Local Nature Recovery Strategy habitat priority areas | **Somerset Wildlife Trust / Somerset Council** | Published via Somerset Council's iShare service |
+| Caves, cliffs, springs, trees, buildings, shops, benches, recreation, historic and mining features, watercourses, settlements | **OpenStreetMap contributors** | [Open Database Licence (ODbL) 1.0](https://opendatacommons.org/licenses/odbl/) — attribution and share-alike required |
+| Surface water flood risk; LiDAR terrain | **Environment Agency** | [Open Government Licence v3](https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/) |
+| Bedrock and superficial geology (1:625 000) | **British Geological Survey** | © UKRI. BGS 1:625 000 open data, used under BGS open licence terms |
+| Woodland and tree canopy (National Forest Inventory) | **Forestry Commission** | [Open Government Licence v3](https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/) |
+| Public rights of way | **Somerset Council** definitive map extract | Not the legal definitive map — indicative only |
+| Recent wildlife sightings | **the [iNaturalist](https://www.inaturalist.org/) community**, live via the iNaturalist API | Each observation carries its own licence, set by the recorder. Photographs remain the copyright of the photographer. |
+| Community projects | Added by local people through this map | Contributed for use on this map |
 
 ### Base maps
 
-**Satellite + OS** (default) · **OS map** · **Satellite** · **LiDAR** (Environment
-Agency 1 m terrain hillshade) · **Old OS (1880s)** (National Library of Scotland
-25-inch series).
-
-### How layers are trimmed
-
-Rather than loading the whole county, each layer keeps only features that reach a
-buffer around the parish: **2.5 km** for SSSIs and nature reserves, **1.5 km** for
-general overlays, **500 m** for LNRS. Features are kept **whole** — never clipped
-in half at the buffer edge.
-
----
-
-## Adding projects
-
-The **Add your project** button lets anyone drop a point or draw an area, describe
-it, and attach photos.
-
-- Projects are saved to a **Google Sheet**, and photos to a **Google Drive folder**,
-  through a Google Apps Script web app. This is already set up and live.
-- Whoever adds a project can edit or delete it again from the same browser — a
-  private token is kept in that browser's local storage.
-- **Manage as admin** (bottom of the layers panel) asks for a password and then
-  allows editing or deleting *any* project. The password is verified by the Apps
-  Script on every change, so it can't be bypassed from the browser.
-
-### Where the backend code lives
-
-> The Apps Script source is **not in this repository**. It lives in the Google
-> Sheet itself: open the Sheet → **Extensions → Apps Script**.
-
-To change it: edit there, then **Deploy → Manage deployments → (pencil) → Version:
-New version → Deploy**, so the existing `/exec` URL picks up the change. If you
-create a *new* deployment instead, the URL changes and you must update
-`APPS_SCRIPT_URL` in `index.html` to match.
-
-### Moderating
-
-Projects are rows in the Sheet — delete a row and it leaves the map. Every uploaded
-photo is in the Drive folder, so images can be reviewed or removed there too.
-
----
-
-## Configuration
-
-All of it is in the `CONFIG` block near the top of the `<script>` in `index.html`:
-
-```js
-const OS_API_KEY      = "…";   // OS Data Hub key → OS Outdoor base map
-const MAPTILER_KEY    = "…";   // sharper satellite imagery (falls back to Esri if absent)
-const APPS_SCRIPT_URL = "…";   // Google Apps Script /exec URL — saving projects
-const SHIPHAM = { lat:51.3138, lng:-2.7987, zoom:14 };   // initial view
-```
-
-If a key is missing the map degrades gracefully: without `MAPTILER_KEY` satellite
-falls back to keyless Esri imagery; without `OS_API_KEY` the OS base map is
-unavailable. Without `APPS_SCRIPT_URL` the map runs in preview mode, where added
-projects appear only in the contributor's own browser.
-
-### Keeping the keys safe
-
-Both keys are visible to anyone who views the page — unavoidable for a static
-site. The two providers differ in what you can do about it.
-
-- **MapTiler** — restricted to `dusky-nembrotha.github.io` in the MapTiler
-  dashboard. Verified: the key returns 403 from any other referer. ✅
-- **OS Data Hub** — **OS does not offer referer or domain restrictions.** The key
-  works from anywhere and that cannot be fixed from the dashboard or the code.
-
-Because the OS key can't be locked down, the protection is billing-side:
-
-1. **Keep no payment card on the OS account.** Without one, exceeding the £1,000
-   monthly free premium allowance simply pauses premium access until the next
-   month. With a valid card on file, OS bills you for the overage instead.
-2. **Watch the usage dashboard** for transactions you didn't cause.
-3. **Regenerate the key** (Actions → Regenerate API Key) if usage looks wrong,
-   and update `OS_API_KEY` here afterwards.
-4. If the map ever needs stronger protection, the real fix is a proxy — route
-   tile requests through a small backend that holds the key — at the cost of
-   added latency on every tile.
-
----
-
-## Making it yours
-
-- **Re-centre** — edit the `SHIPHAM` line above.
-- **Colours** — the palette lives at the top of the `<style>` block:
-  `--paper`, `--stone`, `--ink`, `--muted`, `--moss`, `--sage`, `--slate`,
-  `--gorse`, `--heather`, `--line`.
-- **Title and tagline** — in `<div class="brand">` near the top of the page.
-
----
-
-## The data files
-
-Two layers are served from this repo rather than a live service, because the
-public services for them are slow or awkward to query from a browser.
-
-| File | Features | Contents |
+| Backdrop | Source | Licence |
 |---|---|---|
-| `shipham-habitats.geojson` | 10,794 | Priority habitats, woodland, and tree groups |
-| `shipham-prow.geojson` | 146 | Public rights of way |
+| OS map (Outdoor) | **Ordnance Survey** via the OS Data Hub | Contains OS data © Crown copyright and database right |
+| Satellite imagery | **MapTiler**, **Esri** | © MapTiler, © Esri — used under their terms |
+| LiDAR terrain hillshade | **Environment Agency** | Open Government Licence v3 |
+| Old OS 25-inch (1880s) | **National Library of Scotland** | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) |
+| Place labels, plain map | **OpenStreetMap contributors**, **CARTO** | ODbL 1.0 / CARTO terms |
 
-**About the habitats file.** It originally held 25,985 features, but 15,183 of
-those were single `Lone Tree` points from the National Forest Inventory canopy
-data — 58% of the file, and thousands of near-invisible specks to draw at village
-scale. Those have been dropped, and coordinates rounded to 5 decimal places
-(~1 m, far finer than the source data warrants). Every priority-habitat polygon is
-untouched. The file went from 8.2 MB to 4.5 MB (1.33 MB to 0.71 MB as GitHub Pages
-actually serves it, gzipped), and from 25,985 shapes to draw down to 10,794.
+### Reusing anything you see here
 
-If you ever need the lone trees back, the original file is in this repo's git
-history.
-
----
-
-## Notes & limits
-
-- Apps Script's free quotas are generous — thousands of reads and writes a day,
-  ample for a village map. No billing involved.
-- If photos ever fail to display, check that link-sharing isn't blocked on the
-  Google account. A personal Gmail account works out of the box; some managed
-  Workspace accounts restrict it.
-- The map needs an internet connection: Leaflet, Turf and proj4 load from CDNs,
-  each with two fallback CDNs.
+The open data layers can be reused under the licences above, with attribution.
+The OpenStreetMap-derived layers are **share-alike**: anything you build on them
+and publish must itself be ODbL. The Ordnance Survey base maps are **not** open
+data and cannot be extracted, redistributed or republished.
 
 ---
 
-## Data sources & credit
+## Notes and limits
 
-- **SSSIs, Local Nature Reserves** — © Natural England, Open Government Licence;
-  contains Ordnance Survey data © Crown copyright and database right.
-- **Parish boundary** — Office for National Statistics licensed under the Open
-  Government Licence; contains OS data © Crown copyright and database right.
-- **Wildlife sightings** — the iNaturalist community, via the iNaturalist API.
-- **Somerset Local Nature Recovery Strategy** — Somerset Wildlife Trust.
-- **Surface water flood risk; LiDAR terrain** — © Environment Agency, OGL v3.
-- **Historical OS 25-inch (1880s)** — National Library of Scotland, CC-BY.
-- **Base maps** — © OpenStreetMap contributors, © CARTO; OS Outdoor © Crown
-  copyright; satellite imagery © MapTiler, © Esri.
+- Layers cover the parish plus roughly 2.5 km around it, so neighbouring features
+  that matter locally — Cheddar Gorge, Black Rock, Dolebury Warren — are included.
+- An internet connection is needed; the mapping library and the live sightings
+  both load from the web.
+- Wildlife sightings show the most recent 1,000 records in the parish area. Some
+  species with sensitive locations are deliberately obscured by iNaturalist.
+- Cave locations are as mapped by the OpenStreetMap community and are **not** a
+  caving guide. Many Mendip caves are dangerous and on private land.
+
+---
+
+## For maintainers
+
+The map is `index.html` plus a folder of GeoJSON files, served by GitHub Pages.
+Editing `index.html` and pushing to `main` updates the live site within a minute
+or two.
+
+**Adding a layer:** drop `layers/your-layer.geojson` into the repo, add one line
+to the `LAYERS` catalogue near the top of the script, and list its key under the
+relevant group in `GROUPS`. Both blocks are commented.
+
+**Configuration** (API keys, the Apps Script URL, the starting view) sits in the
+`CONFIG` block at the top of the script.
+
+**The Apps Script backend** that stores community projects is *not* in this
+repository — it lives in the Google Sheet, under **Extensions → Apps Script**. To
+change it, edit there and redeploy with **Deploy → Manage deployments → (pencil)
+→ Version: New version**, which keeps the existing `/exec` URL working.
+
+**On the API keys.** Both are visible in the page source, as they must be for a
+static site. MapTiler is restricted to this domain in the MapTiler dashboard. The
+OS Data Hub offers no equivalent restriction, so the protection there is
+billing-side: with no payment card on the OS account, exceeding the monthly free
+premium allowance pauses premium access until the next month rather than running
+up a bill.

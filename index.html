@@ -3,11 +3,10 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Shipham Biodiversity Map</title>
-<meta name="description" content="A community map of biodiversity and conservation projects in and around Shipham parish, Somerset." />
+<title>Shipham Parish Maps</title>
+<meta name="description" content="Community maps of Shipham parish, Somerset: biodiversity, landscape and heritage, geology, history and parish assets." />
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.min.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.Default.min.css" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -26,12 +25,6 @@
      and vector SVG — a common cause of layers scaling/drifting wrong on zoom. */
   .leaflet-container img,.leaflet-pane>svg,.leaflet-pane>canvas,.leaflet-tile,
   .leaflet-marker-icon,.leaflet-image-layer{max-width:none!important;max-height:none!important}
-  /* Pin the draw/edit vertex handles to a fixed size centred on their point
-     (Leaflet's touch CSS resizes them but leaves the old centring, which made
-     the handles sit SW of their point and the polygon look offset NE). */
-  .leaflet-editing-icon,.leaflet-touch .leaflet-editing-icon{
-    width:14px!important;height:14px!important;margin-left:-7px!important;margin-top:-7px!important;
-    box-sizing:content-box!important;background:#fff;border:2px solid #1565C0;border-radius:50%}
   html,body{height:100%;margin:0}
   body{font-family:"Inter",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--ink);
     background:var(--paper);overflow:hidden;-webkit-tap-highlight-color:transparent;
@@ -207,76 +200,111 @@
   }
   @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
 </style>
+
+  /* ================= Landing page ================= */
+  #landing{position:fixed;inset:0;z-index:3000;background:linear-gradient(170deg,#F4F1E7,#E7EFE4 60%,#DCE9DD);
+    overflow:auto;display:flex;align-items:center;justify-content:center;padding:26px 18px;
+    transition:opacity .28s ease,visibility .28s}
+  #landing.hide{opacity:0;visibility:hidden;pointer-events:none}
+  .land{max-width:980px;width:100%}
+  .land__top{display:flex;gap:18px;align-items:center;margin-bottom:20px}
+  .land__sign{width:104px;height:104px;object-fit:cover;border-radius:16px;border:1px solid var(--line);
+    background:#fff;flex:none;box-shadow:var(--shadow)}
+  .land h1{font-family:"Fraunces",serif;font-weight:700;font-size:clamp(1.5rem,4.2vw,2.3rem);margin:0 0 5px;
+    line-height:1.04;letter-spacing:-.015em;color:var(--moss)}
+  .land h1 .leaf{color:var(--heather)}
+  .land__sub{margin:0;color:var(--muted);font-size:.95rem;max-width:46em}
+  .groups{display:grid;grid-template-columns:repeat(auto-fit,minmax(248px,1fr));gap:13px}
+  .grp{display:flex;gap:13px;align-items:flex-start;text-align:left;cursor:pointer;font-family:inherit;
+    background:rgba(255,255,255,.93);border:1px solid var(--line);border-left:5px solid var(--g,#2F5D3A);
+    border-radius:var(--radius);padding:15px 16px;box-shadow:0 2px 10px rgba(30,42,35,.07);
+    transition:transform .13s ease,box-shadow .13s ease;color:inherit}
+  .grp:hover,.grp:focus-visible{transform:translateY(-2px);box-shadow:0 8px 22px rgba(30,42,35,.15);outline:none}
+  .grp:focus-visible{border-color:var(--g,#2F5D3A)}
+  .grp__ico{width:40px;height:40px;flex:none;border-radius:11px;display:grid;place-items:center;
+    background:var(--gbg,#EAF1EA);color:var(--g,#2F5D3A)}
+  .grp__ico svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.9;
+    stroke-linecap:round;stroke-linejoin:round}
+  .grp b{display:block;font-size:1.02rem;font-weight:700;color:var(--ink);line-height:1.2;margin-bottom:3px}
+  .grp small{display:block;color:var(--muted);font-size:.79rem;line-height:1.38}
+  .grp em{display:block;margin-top:6px;font-style:normal;font-size:.69rem;color:var(--g,#2F5D3A);
+    font-weight:700;text-transform:uppercase;letter-spacing:.045em}
+  .land__foot{margin-top:18px;font-size:.73rem;color:var(--muted);text-align:center;line-height:1.6}
+  .land__foot a{color:var(--moss)}
+
+  /* ================= Group chrome on the map ================= */
+  .backBtn{position:absolute;top:14px;left:14px;z-index:1200;display:inline-flex;align-items:center;gap:7px;
+    background:rgba(251,250,246,.95);backdrop-filter:blur(6px);border:1px solid var(--line);
+    border-radius:11px;padding:8px 12px;font:600 .8rem/1 inherit;color:var(--ink);cursor:pointer;
+    box-shadow:var(--shadow)}
+  .backBtn svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round}
+  .backBtn:hover{background:#fff}
+  .brand{top:60px}
+  .grpTag{display:inline-block;font-size:.63rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;
+    color:#fff;background:var(--g,#2F5D3A);padding:3px 8px;border-radius:999px;margin-bottom:7px}
+  .layer__txt small .count{color:var(--muted)}
+  .panel__body .lyrgroup{font-size:.63rem;font-weight:800;letter-spacing:.055em;text-transform:uppercase;
+    color:var(--muted);margin:9px 0 3px 8px}
+  .panel__body .lyrgroup:first-child{margin-top:2px}
+  .spin-sm{display:inline-block;width:9px;height:9px;border:2px solid var(--line);border-top-color:var(--moss);
+    border-radius:50%;animation:spin .7s linear infinite;vertical-align:-1px}
+  .sidebox{margin-top:10px;border-top:1px solid var(--line);padding-top:9px}
+  .sidebox h3{font:700 .72rem/1.3 inherit;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:0 0 6px}
+  .sidelist{display:grid;gap:4px;max-height:210px;overflow:auto}
+  .sidelist button{display:block;width:100%;text-align:left;border:1px solid var(--line);background:#fff;
+    border-radius:8px;padding:6px 8px;font:inherit;font-size:.76rem;cursor:pointer;color:inherit;line-height:1.25}
+  .sidelist button:hover{border-color:var(--moss);background:#F7FAF6}
+  .sidelist .m{display:block;font-size:.65rem;color:var(--muted);margin-top:1px}
+</style>
 </head>
 <body>
 
 <div id="map"></div>
 
-<div class="brand" id="brand">
+<button class="backBtn" id="backBtn" hidden>
+  <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg> All maps
+</button>
+
+<div class="brand" id="brand" hidden>
   <div class="brand__head" id="brandHead" role="button" tabindex="0" aria-expanded="true">
-    <h1>Shipham Biodiversity Map <span class="leaf">✿</span></h1>
+    <div><span class="grpTag" id="grpTag"></span><h1 id="grpTitle">Shipham</h1></div>
     <span class="brand__chev">▾</span>
   </div>
   <div class="brand__body">
-    <img class="brand__img" src="shipham-sign.jpg" alt="Shipham village sign" onerror="this.style.display='none'">
-    <p>Nature &amp; conservation across Shipham, Rowberrow and Star. Explore what's here — and add your own project.</p>
+    <p id="grpBlurb"></p>
     <div id="showcase" class="showcase" hidden></div>
+    <div id="sidebox" class="sidebox" hidden>
+      <h3 id="sideboxTitle">Highlights</h3>
+      <div class="sidelist" id="sidelist"></div>
+    </div>
   </div>
 </div>
 
-<aside class="panel" id="panel" aria-label="Map layers">
+<aside class="panel" id="panel" aria-label="Map layers" hidden>
   <div class="panel__head" id="panelHead" role="button" tabindex="0" aria-expanded="true">
     <h2>What's on the map</h2><span class="panel__chev">▾</span>
   </div>
-  <div class="panel__body">
-    <label class="layer"><input type="checkbox" id="lyr-parish" checked>
-      <span class="swatch line"></span>
-      <span class="layer__txt"><b>Parish boundary</b><small>Shipham, Rowberrow &amp; Star</small></span></label>
-    <label class="layer"><input type="checkbox" id="lyr-sssi" checked>
-      <span class="swatch" style="background:#D81B83"></span>
-      <span class="layer__txt"><b>Protected wildlife sites</b><small>SSSIs — within 2.5&nbsp;km <span class="count" id="c-sssi"></span></small></span></label>
-    <label class="layer"><input type="checkbox" id="lyr-lnr" checked>
-      <span class="swatch" style="background:#00897B"></span>
-      <span class="layer__txt"><b>Local nature reserves</b><small>Natural England — within 2.5&nbsp;km <span class="count" id="c-lnr"></span></small></span></label>
-    <label class="layer"><input type="checkbox" id="lyr-inat" checked>
-      <span class="swatch" style="background:var(--gorse)"></span>
-      <span class="layer__txt"><b>Recent wildlife sightings</b><small>iNaturalist <span class="count" id="c-inat"></span></small></span></label>
-    <label class="layer"><input type="checkbox" id="lyr-proj" checked>
-      <span class="swatch" style="background:#1565C0"></span>
-      <span class="layer__txt"><b>Conservation projects</b><small>Added by people like you <span class="count" id="c-proj"></span></small></span></label>
+  <div class="panel__body" id="panelBody"></div>
+</aside>
 
-    <div style="border-top:1px solid var(--line);margin:6px 8px 0;padding:7px 0 1px">
-      <small style="display:block;font-size:.66rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-left:8px">Context layers</small>
-    </div>
-    <label class="layer"><input type="checkbox" id="lyr-habitats">
-      <span class="swatch" style="background:linear-gradient(90deg,#2E7D32,#9CCC65,#26A69A)"></span>
-      <span class="layer__txt"><b>Habitats</b><small>Priority habitats and woodland <span class="count" id="c-habitats"></span></small></span></label>
-    <label class="layer"><input type="checkbox" id="lyr-flood">
-      <span class="swatch" style="background:#5DA8E0"></span>
-      <span class="layer__txt"><b>Surface water</b><small>EA flood risk zones <span class="count" id="c-flood"></span></small></span></label>
-    <label class="layer"><input type="checkbox" id="lyr-prow" checked>
-      <span class="swatch" style="background:transparent;height:0;border:0;border-top:3px dashed #2EE65C;width:15px;margin-top:8px;border-radius:0"></span>
-      <span class="layer__txt"><b>Public rights of way</b><small>footpaths &amp; bridleways <span class="count" id="c-prow"></span></small></span></label>
-    <label class="layer"><input type="checkbox" id="lyr-lnrs">
-      <span class="swatch" style="background:linear-gradient(90deg,#2E7D32,#9C4D9C,#3DA5C4)"></span>
-      <span class="layer__txt"><b>Nature recovery (LNRS)</b><small>Somerset habitat priority areas <span class="count" id="c-lnrs"></span></small></span></label>
-
-    <div class="basemap">
-      <small>Base map</small>
-      <div class="row">
-        <button id="bm-satos" class="active">Satellite + OS</button>
-        <button id="bm-os">OS map</button>
-        <button id="bm-sat">Satellite</button>
-        <button id="bm-lidar">LiDAR</button>
-        <button id="bm-nls">Old OS (1880s)</button>
+<div id="landing">
+  <div class="land">
+    <div class="land__top">
+      <img class="land__sign" src="shipham-sign.jpg" alt="Shipham village sign" onerror="this.style.display='none'">
+      <div>
+        <h1>Shipham Parish Maps <span class="leaf">✿</span></h1>
+        <p class="land__sub">Nature, landscape and history across Shipham, Rowberrow and Star.
+          Choose a map to explore — each one opens with its own layers and backdrop.</p>
       </div>
     </div>
-    <div style="border-top:1px solid var(--line);margin:8px 8px 0;padding-top:8px">
-      <button id="adminBtn" style="width:100%;border:1px solid var(--line);background:#fff;color:var(--muted);padding:7px;border-radius:9px;font-size:.73rem;font-weight:600;cursor:pointer;font-family:inherit">Manage as admin</button>
-      <div style="text-align:center;font-size:.62rem;color:var(--muted);margin-top:6px;opacity:.7">build 2026-09-11</div>
-    </div>
+    <div class="groups" id="groupBtns"></div>
+    <p class="land__foot">
+      Open data from Natural England, Historic England, the Environment Agency, Ordnance Survey,
+      OpenStreetMap, the National Library of Scotland and Somerset Wildlife Trust.
+      <br>Sightings come live from the <a href="https://www.inaturalist.org/" target="_blank" rel="noopener">iNaturalist</a> community.
+    </p>
   </div>
-</aside>
+</div>
 
 <div class="hint" id="hint">
   <span>Aim the crosshair, tap “Add point”. One point = a single spot; 3+ = an area.</span>
@@ -294,7 +322,7 @@
   <circle cx="23" cy="23" r="2.5" fill="#1565C0"/>
 </svg></div>
 
-<button class="fab" id="addBtn">
+<button class="fab" id="addBtn" hidden>
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
   Add your project
 </button>
@@ -329,72 +357,16 @@
 </form>
 
 <div class="toast" id="toast"></div>
-
 <script>
-/* ===== The whole app lives in initApp(), which only runs AFTER the map
-   libraries have finished loading (see the bootstrap at the very bottom).
-   That ordering is what prevents the "L is not defined" error. ===== */
 function initApp(){
-
 /* =================================================================
-   CONFIG — the only part you may need to edit. See README.md.
+   CONFIG — the only part you normally need to edit. See README.md.
 ================================================================= */
-const OS_API_KEY        = "2dSIGJBjO8WVJuFxhgWj1tvnAQhCXDy8";  // free OS Data Hub key → real OS maps
-const MAPTILER_KEY      = "V6mUPHc6MgzfhbknA10X";    // optional: sharper satellite imagery
-const APPS_SCRIPT_URL   = "https://script.google.com/macros/s/AKfycbzyBmfJVVTEjpoS68ioa_TQDgC3RtBnchsPq7vjPt1yTZUHK9rNB46wc3aQaQUhX1li9g/exec"; // Google Drive/Sheets backend
-
+const OS_API_KEY        = "2dSIGJBjO8WVJuFxhgWj1tvnAQhCXDy8";  // OS Data Hub key → OS base map
+const MAPTILER_KEY      = "V6mUPHc6MgzfhbknA10X";              // sharper satellite (falls back to Esri)
+const APPS_SCRIPT_URL   = "https://script.google.com/macros/s/AKfycbzyBmfJVVTEjpoS68ioa_TQDgC3RtBnchsPq7vjPt1yTZUHK9rNB46wc3aQaQUhX1li9g/exec";
 const SHIPHAM = { lat:51.3138, lng:-2.7987, zoom:14 };
-
-/* Somerset iShare WFS endpoint (OWS proxy scoped to the Wildlife Trust map profile).
-   This service only outputs GML (no GeoJSON), so loadContext() fetches GML and parses it
-   client-side via gmlToGeoJSON(). The bbox below is a generous native-grid box (EPSG:27700, so
-   axis order is unambiguous easting,northing) around Shipham — the exact 500 m clip still
-   happens client-side. */
-const LNRS_WFS  = "https://maps.somerset.gov.uk/iShareLive.Web/getows.ashx?mapsource=mapsources/SomersetWildlifeTrust_Live3";
-/* The service only serves EPSG:27700 (British National Grid), so we request in 27700 and
-   reproject to WGS84 in the browser with proj4. bbox + srsName both use the 27700 urn form
-   the capabilities advertises. */
-const LNRS_BBOX = "340000,152000,350000,162000,urn:ogc:def:crs:EPSG::27700";   // ~10 km box bracketing the parish
-if(typeof proj4!=="undefined" && !proj4.defs("EPSG:27700")){
-  proj4.defs("EPSG:27700","+proj=tmerc +lat_0=49 +lon_0=-2 +k=0.9996012717 +x_0=400000 +y_0=-100000 "
-    +"+ellps=airy +towgs84=446.448,-125.157,542.06,0.15,0.247,0.842,-20.489 +units=m +no_defs");
-}
-/* The original Somerset LNRS "Local Habitat Map" (Astun iShare Spotlight app) this layer is drawn from. */
-const LNRS_MAP_URL = "https://ol-ishare.services.astuntechnology.com/v1/apps/spotlight/map.html?v=1&ishareurl=https%3A%2F%2Fmaps.somerset.gov.uk%2FiShareLive.Web%2F&navigation=true&gazetteer=true&infopopup=true&layerswitcher=true&layerswitcherLegend=dynamic&layerswitcherOpen=true&panelTitle=Somerset+LNRS+-+Local+Habitat+Map&panelDesc=Click+to+see+the+recommended+measures+for+that+location&profile=mapsources%2FSomersetWildlifeTrust_Live3&easting=345088.55&northing=157180.63&resolution=2.1166666666666667&basemap=mapsources%2Fbase_ospremium_bw&srs=EPSG%3A27700";
-
-/* Context layers (all OFF by default). Each pulls from an official open-data
-   service. Two of them have a paste-in slot — copy the layer's service URL from
-   your ArcGIS map (…/FeatureServer/0) into the {url:"…"} blanks below.        */
-const CONTEXT_LAYERS = [
-  { key:"habitats", label:"Habitats", sub:"Priority habitats and woodland", pane:"habitatsPane",
-    style:{stroke:false,fillOpacity:.6}, fastClip:true,
-    colorBy:["hab","Main_Habit","mainhabs","MAIN_HABIT","habitat","Habitat","HABITAT","IFT_IOA","CATEGORY","Category","Woodland_Type"],
-    sources:[ {geojson:"shipham-habitats.geojson"} ] },
-  { key:"flood", label:"Surface water", sub:"EA flood risk zones", pane:"floodPane",
-    wms:{ url:"https://environment.data.gov.uk/spatialdata/nafra2-risk-of-flooding-from-surface-water/wms",
-          layers:"rofsw", opacity:0.8, bounds:[[51.283,-2.865],[51.347,-2.735]] } },
-  { key:"prow", label:"Public rights of way", sub:"footpaths, bridleways & byways",
-    style:{color:"#2EE65C",weight:3,opacity:.98,dashArray:"6 6",fill:false},
-    sources:[ {geojson:"shipham-prow.geojson"} ] },
-  /* Somerset Local Nature Recovery Strategy — habitat priority areas, served live from
-     Somerset Wildlife Trust's iShare (Astun) WFS as GML, parsed to GeoJSON in the browser,
-     then included whole if the polygon reaches within 500 m of the parish (bufferKm:0.5) — no
-     geometry trimming, exactly like the other overlays. typeNames verified against the service
-     GetCapabilities; if one ever stays empty, re-check its <Name> there and edit below. */
-  { key:"lnrs", label:"Nature recovery (LNRS)", sub:"Somerset habitat priority areas", pane:"habitatsPane",
-    style:{stroke:false,fillOpacity:.55,fillColor:"#4E8E63"}, bufferKm:0.5,
-    credit:"Somerset Local Nature Recovery Strategy · Somerset Wildlife Trust",
-    creditUrl:LNRS_MAP_URL, creditLabel:"Open the Somerset LNRS map →",
-    attribution:`Somerset LNRS &copy; <a href="${LNRS_MAP_URL.replace(/&/g,"&amp;")}" target="_blank" rel="noopener">Somerset Wildlife Trust</a>`,
-    sources:[
-      {wfs:{url:LNRS_WFS, typeName:"ACBI_-_Woodland"},          fill:"#2E7D32", cat:"Woodland"},          // green
-      {wfs:{url:LNRS_WFS, typeName:"ACBI_-_Grassland"},         fill:"#D4B14A", cat:"Grassland"},         // gold
-      {wfs:{url:LNRS_WFS, typeName:"ACBI_-_Wetlands"},          fill:"#3DA5C4", cat:"Lowland wetland"},   // light blue
-      {wfs:{url:LNRS_WFS, typeName:"ACBI_-_Moorland_and_Heath"},fill:"#9C4D9C", cat:"Moorland & heath"},  // purple
-      {wfs:{url:LNRS_WFS, typeName:"ACBI_-_Fresh_Water"},       fill:"#1E88A8", cat:"Freshwater"},        // teal
-      {wfs:{url:LNRS_WFS, typeName:"ACBI_-_Coastal_and_Marine"},fill:"#C2A36B", cat:"Coastal"}            // sand (inland: usually empty)
-    ] }
-];
+const DATA    = "layers/";          // every vector layer is a GeoJSON file in this folder
 /* ================================================================= */
 
 const gasReady = /^https:\/\/script\.google\.com\/.+\/exec$/.test(APPS_SCRIPT_URL);
@@ -402,19 +374,36 @@ const backendReady = gasReady;
 const osReady = OS_API_KEY && !OS_API_KEY.includes("YOUR_");
 const mtReady = MAPTILER_KEY && !MAPTILER_KEY.includes("YOUR_");
 
+/* ---------- Small helpers ---------- */
+const esc = s => (s==null?"":String(s)).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const URL_RE = /\b((?:https?:\/\/|www\.)[^\s<]+[^\s<.,;:!?)\]'"])/gi;
+const linkify = s => esc(s).replace(URL_RE, m=>{
+  const href = m.startsWith("www.") ? "https://"+m : m;
+  return `<a href="${href}" target="_blank" rel="noopener">${m}</a>`;
+});
+const bboxQS = b => `${b.getWest()},${b.getSouth()},${b.getEast()},${b.getNorth()}`;
+const setCount = (id,n)=>{ const el=document.getElementById(id); if(el) el.textContent = n==null?"":"· "+n; };
+const tidyName = s => /[a-z]/.test(String(s)) ? String(s)
+  : String(s).toLowerCase().replace(/\b[a-z]/g, c=>c.toUpperCase());   // "SLADERS LEIGH" → "Sladers Leigh"
+function pickName(p){ for(const k in p){ if(/(sssi|lnr).*name|^name$|^par\d*nm$/i.test(k) && p[k]) return tidyName(p[k]); }
+  for(const k of ["SSSI_NAME","LNR_NAME","NAME","Name","name"]) if(p[k]) return tidyName(p[k]); return "Unnamed site"; }
+
 /* ---------- Map ---------- */
-const map = L.map("map", { zoomControl:false, maxZoom:20 }).setView([SHIPHAM.lat, SHIPHAM.lng], SHIPHAM.zoom);
+const map = L.map("map", { zoomControl:false, maxZoom:20, preferCanvas:true })
+             .setView([SHIPHAM.lat, SHIPHAM.lng], SHIPHAM.zoom);
 L.control.zoom({ position:"bottomleft" }).addTo(map);
 /* Keep the map filling the window after a rotate, a window resize, or the on-screen
    keyboard opening. Leaflet watches window resize itself but not visualViewport. */
 const refitMap = () => map.invalidateSize({pan:false});
 addEventListener("orientationchange", ()=>setTimeout(refitMap,200));
 if(window.visualViewport) visualViewport.addEventListener("resize", refitMap);
-// Background context panes (below the default overlayPane=400 used by parish, SSSI, projects, PRoW):
-map.createPane("habitatsPane"); map.getPane("habitatsPane").style.zIndex = 350;   // habitats lowest
-map.createPane("floodPane");    map.getPane("floodPane").style.zIndex    = 360;   // flood just above habitats
 
-/* Satellite — MapTiler if a key is supplied (sharper), else keyless Esri */
+/* Background panes, below the default overlayPane (400) used by points and lines. */
+map.createPane("fillPane"); map.getPane("fillPane").style.zIndex = 350;   // area washes
+map.createPane("wmsPane");  map.getPane("wmsPane").style.zIndex  = 360;   // raster overlays
+map.createPane("linePane"); map.getPane("linePane").style.zIndex = 420;   // paths, boundaries
+
+/* ---------- Base maps ---------- */
 const satLayer = mtReady
   ? L.tileLayer(`https://api.maptiler.com/maps/satellite/256/{z}/{x}/{y}.jpg?key=${MAPTILER_KEY}`,
       { maxZoom:20, attribution:"Imagery &copy; MapTiler, Esri" })
@@ -424,79 +413,49 @@ const osOutdoor = osReady ? L.tileLayer(`https://api.os.uk/maps/raster/v1/zxy/Ou
       { maxZoom:20, attribution:"Contains OS data &copy; Crown copyright &amp; database right" }) : null;
 const labels = L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}{r}.png",
       { subdomains:"abcd", maxZoom:20, attribution:"&copy; OpenStreetMap &copy; CARTO" });
-
-/* EA National LIDAR Composite 1 m DTM — multi-directional hillshade, terrain basemap.
-   Served via the Environment Agency's supported WMS (their Esri image services are being
-   retired, which is why the older /MapServer export endpoints returned blank tiles).
-   Same delivery mechanism as the working flood layer. */
 const lidarLayer = L.tileLayer.wms(
   "https://environment.data.gov.uk/spatialdata/lidar-composite-digital-terrain-model-dtm-1m/wms",
   { layers:"Lidar_Composite_Hillshade_DTM_1m", format:"image/png", transparent:false,
     version:"1.1.1", maxZoom:20, attribution:"LIDAR DTM hillshade &copy; Environment Agency (OGL v3)" });
-/* National Library of Scotland — OS 25-inch to the mile (Somerset sheets, surveyed 1880s). */
 const nlsLayer = L.tileLayer("https://mapseries-tilesets.s3.amazonaws.com/25_inch/somerset/{z}/{x}/{y}.png",
   { maxZoom:20, maxNativeZoom:20, attribution:"Historical OS 25-inch &copy; National Library of Scotland (CC-BY)" });
+const plainLayer = L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
+  { subdomains:"abcd", maxZoom:20, attribution:"&copy; OpenStreetMap &copy; CARTO" });
 
+const BASES = {
+  satos:  { label:"Satellite + OS", build:()=> osReady ? [satLayer, osOutdoor] : [satLayer, labels] },
+  os:     { label:"OS map",         build:()=> osReady ? [osOutdoor] : [plainLayer] },
+  sat:    { label:"Satellite",      build:()=> [satLayer, labels] },
+  lidar:  { label:"LiDAR terrain",  build:()=> [lidarLayer, labels] },
+  nls:    { label:"Old OS (1880s)", build:()=> [nlsLayer] },
+  plain:  { label:"Plain map",      build:()=> [plainLayer] }
+};
 let currentBase = [];
 function setBase(mode){
-  currentBase.forEach(l=>map.removeLayer(l)); currentBase=[];
-  const add=l=>{ l.addTo(map); currentBase.push(l); };
-  if(mode==="os" && osOutdoor){ osOutdoor.setOpacity(1); add(osOutdoor); }
-  else if(mode==="sat"){ add(satLayer); }
-  else if(mode==="lidar"){ add(lidarLayer); }
-  else if(mode==="nls"){ add(nlsLayer); }
-  else { add(satLayer); if(osOutdoor){ osOutdoor.setOpacity(.55); add(osOutdoor); } else add(labels); }
-  ["satos","os","sat","lidar","nls"].forEach(m=>document.getElementById("bm-"+m).classList.toggle("active", m===mode));
+  currentBase.forEach(l=>{ if(l) map.removeLayer(l); });
+  const b = BASES[mode] || BASES.satos;
+  currentBase = b.build().filter(Boolean);
+  currentBase.forEach((l,i)=>{ l.setZIndex(i+1); l.addTo(map); });
+  document.querySelectorAll("[data-base]").forEach(el=>el.classList.toggle("active", el.dataset.base===mode));
+  if(osReady && mode==="os") osOutdoor.setOpacity(1);
 }
-document.getElementById("bm-satos").onclick=()=>setBase("satos");
-document.getElementById("bm-os").onclick=()=>{ if(!osOutdoor) toast("Add a free OS key (see README) to switch on OS maps."); setBase(osOutdoor?"os":"satos"); };
-document.getElementById("bm-sat").onclick=()=>setBase("sat");
-document.getElementById("bm-lidar").onclick=()=>setBase("lidar");
-document.getElementById("bm-nls").onclick=()=>setBase("nls");
-setBase("satos");
 
-/* ---------- Feature layers ---------- */
-const sssiLayer = L.geoJSON(null, { style:()=>({color:"#D81B83",weight:2,fillColor:"#E0559E",fillOpacity:.18}),
-  onEachFeature:(f,l)=>bindDesignation(f,l,"SSSI","#D81B83") }).addTo(map);
-const lnrLayer = L.geoJSON(null, { style:()=>({color:"#00695C",weight:2,fillColor:"#00897B",fillOpacity:.18}),
-  onEachFeature:(f,l)=>bindDesignation(f,l,"Local nature reserve","#00695C") }).addTo(map);
-const inatCluster = L.markerClusterGroup({ maxClusterRadius:45, showCoverageOnHover:false }).addTo(map);
-let inatTiles = null;   // fallback tile layer, used only if the live API can't be reached
-const projLayer = L.geoJSON(null, { style:()=>({color:"#1565C0",weight:2.5,fillColor:"#2196F3",fillOpacity:.28}),
+/* ---------- Shared feature layers ---------- */
+const parishGroup = L.layerGroup();
+const inatCluster = L.markerClusterGroup({ maxClusterRadius:45, showCoverageOnHover:false });
+let inatTiles = null;
+const projLayer = L.geoJSON(null, { pane:"linePane",
+  style:()=>({color:"#1565C0",weight:2.5,fillColor:"#2196F3",fillOpacity:.28}),
   pointToLayer:(f,ll)=>L.circleMarker(ll,{radius:8,color:"#fff",weight:2,fillColor:"#1565C0",fillOpacity:1}),
   onEachFeature:(f,l)=>{ l._projData=f.properties; if(f.properties.id) projectLayers[f.properties.id]=l;
     l.bindPopup(projectPopup(f.properties));
     if(f.properties.name){ const isPt=f.geometry&&f.geometry.type==="Point";
       l.bindTooltip(esc(f.properties.name),{permanent:true,direction:isPt?"top":"center",
-        className:"proj-label",offset:isPt?[0,-11]:[0,0]}); } } }).addTo(map);
-const parishGroup = L.layerGroup().addTo(map);
+        className:"proj-label",offset:isPt?[0,-11]:[0,0]}); } } });
+let PARISH_BB = null;          // [W,S,E,N] of the parish, used to query iNaturalist
+let parishFeature = null;
 
-bindToggle("lyr-parish", parishGroup);
-bindToggle("lyr-sssi", sssiLayer);
-bindToggle("lyr-lnr", lnrLayer);
-document.getElementById("lyr-inat").addEventListener("change", e=>{
-  [inatCluster, inatTiles].forEach(l=>{ if(l){ e.target.checked ? map.addLayer(l) : map.removeLayer(l); } });
-});
-bindToggle("lyr-proj", projLayer);
-function bindToggle(id, layer){ document.getElementById(id).addEventListener("change", e=>{
-  e.target.checked ? map.addLayer(layer) : map.removeLayer(layer); }); }
-
-/* ---------- Helpers ---------- */
-const esc = s => (s==null?"":String(s)).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-// Turns plain-text URLs in user-submitted text into clickable links, keeping everything else escaped.
-const URL_RE = /\b((?:https?:\/\/|www\.)[^\s<]+[^\s<.,;:!?)\]'"])/gi;
-const linkify = s => esc(s).replace(URL_RE, m=>{
-  const href = m.startsWith("http") ? m : "https://"+m;
-  return `<a href="${href}" target="_blank" rel="noopener" class="desc-link">${m}</a>`;
-});
-const bboxQS = b => `${b.getWest()},${b.getSouth()},${b.getEast()},${b.getNorth()}`;
-const setCount = (id,n)=>{ const el=document.getElementById(id); if(el) el.textContent="· "+n; };
-const idOf = f => f.id ?? f.properties?.OBJECTID ?? f.properties?.objectid ?? JSON.stringify(f.geometry?.coordinates?.[0]?.[0]||f.geometry);
-const tidyName = s => /[a-z]/.test(String(s)) ? String(s)
-  : String(s).toLowerCase().replace(/\b[a-z]/g, c=>c.toUpperCase());   // "SLADERS LEIGH" → "Sladers Leigh"
-function pickName(p){ for(const k in p){ if(/(sssi|lnr).*name|^name$|^par\d*nm$/i.test(k) && p[k]) return tidyName(p[k]); }
-  for(const k of ["SSSI_NAME","LNR_NAME","NAME","Name","name"]) if(p[k]) return tidyName(p[k]); return "Unnamed site"; }
-
+const seen = { inat:new Set() };
 /* ---------- Designation popups (photo + info via Wikipedia) ---------- */
 function bindDesignation(f,l,kind,colour){
   const name=pickName(f.properties||{});
@@ -567,85 +526,6 @@ function projectPopup(p){
     ${photos?`<div class="photos">${photos}</div>`:""}${controls}</div>`;
 }
 
-/* ---------- Natural England (resilient) ---------- */
-const NE = {
-  sssi:{ url:"https://services.arcgis.com/JJzESW51TqeY9uat/arcgis/rest/services/Sites_of_Special_Scientific_Interest_England/FeatureServer/0",
-         item:"f10cbb4425154bfda349ccf493487a80", resolved:null },
-  lnr: { url:"https://services.arcgis.com/JJzESW51TqeY9uat/arcgis/rest/services/Local_Nature_Reserves_England/FeatureServer/0",
-         item:"b1d690ac6dd54c15bdd2d341b686ecd7", resolved:null }
-};
-async function resolveService(cfg){
-  if(cfg.resolved) return cfg.resolved;
-  try{ const r=await fetch(`https://www.arcgis.com/sharing/rest/content/items/${cfg.item}?f=json`);
-    const j=await r.json(); if(j.url){ cfg.resolved=j.url.replace(/\/$/,"")+"/0"; return cfg.resolved; } }catch(e){}
-  return cfg.url;
-}
-async function queryNE(cfg, bounds){
-  const qs = `/query?where=1%3D1&geometry=${bboxQS(bounds)}&geometryType=esriGeometryEnvelope`
-    + `&inSR=4326&spatialRel=esriSpatialRelIntersects&outFields=*&outSR=4326&returnGeometry=true&f=geojson`;
-  for(const base of [cfg.url, await resolveService(cfg)]){
-    try{ const r=await fetch(base+qs); if(!r.ok) continue; const j=await r.json(); if(j&&j.features) return j; }catch(e){}
-  }
-  return null;
-}
-
-/* ---------- Cached, non-destructive loading (keeps popups open) ---------- */
-const seen = { sssi:new Set(), lnr:new Set(), inat:new Set() };
-let loadedArea = null;
-let parishBuffer = null;   // 1.5 km buffer around the parish; general overlays included if they reach it
-let designatedBuffer = null;   // 2.5 km buffer; SSSIs and nature reserves included if they reach it
-let parishFeature = null;  // raw parish polygon — lets a layer request its own buffer distance (e.g. LNRS at 500 m)
-let _bufPolys = null;
-function bufferPolys(){
-  if(_bufPolys) return _bufPolys;
-  try{ _bufPolys = turf.flatten(parishBuffer).features; }catch(e){ _bufPolys=[parishBuffer]; }
-  return _bufPolys;
-}
-function turfIntersect(a,b){
-  try{ return turf.intersect(turf.featureCollection([a,b])); }
-  catch(e){ try{ return turf.intersect(a,b); }catch(e2){ return null; } }
-}
-function nearParishPoint(lng,lat){
-  if(!parishBuffer || typeof turf==="undefined") return true;
-  try{ return turf.booleanPointInPolygon([lng,lat], parishBuffer); }catch(e){ return true; }
-}
-/* Inclusion test only: returns the WHOLE feature if it touches the buffer, else null.
-   No geometry trimming — features crossing the buffer edge are shown in full. */
-function clipToBuffer(f, buf){
-  if(!buf || typeof turf==="undefined") return f;
-  const t=f.geometry && f.geometry.type;
-  try{
-    if(t==="Point") return turf.booleanPointInPolygon(f.geometry.coordinates, buf) ? f : null;
-    return turf.booleanIntersects(f, buf) ? f : null;
-  }catch(e){ return f; }   // on any error, keep the whole feature
-}
-function clipToParish(f){ return clipToBuffer(f, parishBuffer); }   // 500 m (general overlays)
-/* Cheap inclusion test (no geometry trimming) — used for high-volume layers
-   like habitats/woodland/trees so we skip the costly exact clip on thousands of polygons. */
-function nearBufferFeature(f, buf){
-  try{
-    const g=f.geometry; if(!g) return false; let pt;
-    if(g.type==="Point") pt=g.coordinates;
-    else if(g.type==="Polygon") pt=g.coordinates[0][0];
-    else if(g.type==="MultiPolygon") pt=g.coordinates[0][0][0];
-    else if(g.type==="LineString") pt=g.coordinates[0];
-    else if(g.type==="MultiLineString") pt=g.coordinates[0][0];
-    else return true;
-    return turf.booleanPointInPolygon(pt, buf);
-  }catch(e){ return true; }
-}
-function mergeFeatures(layer, set, geojson, countId, buf){
-  (geojson.features||[]).forEach(f=>{ const id=idOf(f);
-    if(set.has(id)) return;
-    const c=clipToBuffer(f, buf||parishBuffer); if(!c) return;
-    set.add(id); layer.addData(c); });
-  setCount(countId, set.size);
-}
-async function loadDesignations(b){
-  const [s,r] = await Promise.all([ queryNE(NE.sssi, b), queryNE(NE.lnr, b) ]);
-  if(s) mergeFeatures(sssiLayer, seen.sssi, s, "c-sssi", designatedBuffer);  // 2.5 km for designated sites
-  if(r) mergeFeatures(lnrLayer,  seen.lnr,  r, "c-lnr",  designatedBuffer);
-}
 const sleep = ms => new Promise(r=>setTimeout(r,ms));
 // Timeout without AbortController (AbortSignal can't be cloned in some sandboxes)
 function timeoutFetch(url, ms){
@@ -666,9 +546,9 @@ async function fetchWithRetry(url,{tries=2,timeout=12000}={}){
 function inatFallback(){
   if(inatTiles) return;                                  // already showing the fallback
   const opts={ maxZoom:20, opacity:.85, attribution:"&copy; iNaturalist" };
-  if(parishBuffer){ try{ opts.bounds=L.geoJSON(parishBuffer).getBounds(); }catch(e){} }
+  if(PARISH_BB){ try{ opts.bounds=L.latLngBounds([PARISH_BB[1],PARISH_BB[0]],[PARISH_BB[3],PARISH_BB[2]]); }catch(e){} }
   inatTiles=L.tileLayer("https://api.inaturalist.org/v1/points/{z}/{x}/{y}.png", opts);
-  if(document.getElementById("lyr-inat").checked) inatTiles.addTo(map);
+  if(document.querySelector('[data-lyr="inat"]:checked')) inatTiles.addTo(map);
   const el=document.getElementById("c-inat"); if(el) el.textContent="· shown as layer";
   toast("Wildlife sightings are showing as a map layer — live details couldn't load right now.");
 }
@@ -689,7 +569,7 @@ function renderShowcase(){
 function addINatObs(o){
   if(!o.geojson || seen.inat.has(o.id)) return;
   const [lng,lat]=o.geojson.coordinates;
-  if(!nearParishPoint(lng,lat)) return;        // hide sightings >500 m from the parish
+  if(PARISH_BB && (lng<PARISH_BB[0]||lng>PARISH_BB[2]||lat<PARISH_BB[1]||lat>PARISH_BB[3])) return;
   seen.inat.add(o.id);
   const common=o.taxon?.preferred_common_name || o.taxon?.name || "Unknown species";
   const sci=o.taxon?.name||""; const thumb=o.photos?.[0]?.url?.replace("square","small");
@@ -703,15 +583,12 @@ function addINatObs(o){
   if(thumb) inatShowcase.push({ common, recorder:(o.user?.name||o.user?.login||"someone"), thumb, uri:o.uri });
 }
 let inatLoaded=false;
-async function loadINat(b){
+async function loadINat(){
   if(inatLoaded) return;                          // fixed parish box — only need to load once
   // Query a stable box around the parish (not the panned view), so a nearby iNat
   // hotspot like Cheddar Gorge can't crowd out Shipham records in the result cap.
-  let W,S,E,N;
-  if(parishBuffer && typeof turf!=="undefined"){
-    try{ const bb=turf.bbox(parishBuffer); W=bb[0];S=bb[1];E=bb[2];N=bb[3]; }catch(e){}
-  }
-  if(W==null){ W=b.getWest();S=b.getSouth();E=b.getEast();N=b.getNorth(); }
+  const bb = PARISH_BB || [SHIPHAM.lng-0.04, SHIPHAM.lat-0.02, SHIPHAM.lng+0.04, SHIPHAM.lat+0.02];
+  const W=bb[0], S=bb[1], E=bb[2], N=bb[3];
   const baseU=`https://api.inaturalist.org/v1/observations?nelat=${N}&nelng=${E}`
     +`&swlat=${S}&swlng=${W}&per_page=200&order=desc&order_by=observed_on`
     +`&geo=true&verifiable=true`;
@@ -729,59 +606,6 @@ async function loadINat(b){
   }
   if(got){ inatLoaded=true; setCount("c-inat", seen.inat.size);
     if(!showcaseDone && inatShowcase.length){ showcaseDone=true; renderShowcase(); } }
-}
-let loading=false;
-async function loadArea(force){
-  if(loading) return;
-  const view=map.getBounds();
-  if(!force && loadedArea && loadedArea.contains(view)) return;
-  if(map.getZoom() < 11) return;
-  loading=true;
-  const fetchB=view.pad(0.5);
-  ["c-sssi","c-inat"].forEach(id=>{ const el=document.getElementById(id); if(el && !el.textContent) el.textContent="· …"; });
-  await Promise.all([ loadDesignations(fetchB), loadINat(fetchB) ]);
-  loadedArea = loadedArea ? loadedArea.extend(fetchB) : fetchB;
-  loading=false;
-}
-let t=null;
-map.on("moveend", ()=>{ clearTimeout(t); t=setTimeout(()=>loadArea(false), 400); });
-
-/* ---------- Parish boundary (robust + clearly visible) ---------- */
-const PARISH_SERVICES = [
- "https://services1.arcgis.com/ESMARspQHYMw9BZ9/arcgis/rest/services/Parishes_and_Non_Civil_Parished_Areas_December_2024_Boundaries_EW_BGC/FeatureServer/0",
- "https://services1.arcgis.com/ESMARspQHYMw9BZ9/arcgis/rest/services/Parishes_and_Non_Civil_Parished_Areas_December_2023_Boundaries_EW_BGC/FeatureServer/0",
- "https://services1.arcgis.com/ESMARspQHYMw9BZ9/arcgis/rest/services/Parishes_May_2024_Boundaries_EW_BGC/FeatureServer/0",
- "https://services1.arcgis.com/ESMARspQHYMw9BZ9/arcgis/rest/services/PARNCP_DEC_2025_EW_BSC/FeatureServer/0"
-];
-async function fetchParish(){
-  const b=L.latLngBounds([SHIPHAM.lat-0.02,SHIPHAM.lng-0.04],[SHIPHAM.lat+0.02,SHIPHAM.lng+0.04]);
-  const qs=`/query?where=1%3D1&geometry=${bboxQS(b)}&geometryType=esriGeometryEnvelope&inSR=4326`
-    +`&spatialRel=esriSpatialRelIntersects&outFields=*&outSR=4326&returnGeometry=true&f=geojson`;
-  for(const svc of PARISH_SERVICES){
-    try{ const r=await fetch(svc+qs); if(!r.ok) continue; const j=await r.json();
-      const feats=(j.features||[]).filter(f=>Object.values(f.properties||{}).some(v=>String(v).trim().toLowerCase()==="shipham"));
-      if(feats.length) return {type:"FeatureCollection",features:feats};
-    }catch(e){}
-  }
-  return null;
-}
-async function loadParish(){
-  const gj=await fetchParish();
-  if(gj){
-    parishFeature = gj.features[0];
-    if(typeof turf!=="undefined"){
-      try{ parishBuffer = turf.buffer(gj.features[0], 1.5, {units:"kilometers"});
-           designatedBuffer = turf.buffer(gj.features[0], 2.5, {units:"kilometers"}); }
-      catch(e){ console.warn("Parish buffer failed; overlays won't be clipped.", e); }
-    }
-    L.geoJSON(gj,{style:{color:"#ffffff",weight:6,opacity:.85,fill:false}}).addTo(parishGroup); // white halo
-    const line=L.geoJSON(gj,{style:{color:"#8E4A77",weight:3,opacity:1,dashArray:"9 6",fill:false}})
-      .bindTooltip("Shipham civil parish (Shipham, Rowberrow & Star)",{sticky:true});
-    line.addTo(parishGroup);
-    try{ map.fitBounds(line.getBounds(),{padding:[40,40],maxZoom:15}); }catch(e){}
-  } else {
-    toast("Couldn't load the parish boundary just now — try refreshing.");
-  }
 }
 
 /* ---------- Projects ---------- */
@@ -837,7 +661,7 @@ async function loadProjects(){
   }
   projLayer.clearLayers(); for(const k in projectLayers) delete projectLayers[k];
   rows.forEach(addProjectFeature);
-  setCount("c-proj", rows.length);
+  setCount("c-projects", rows.length);
   if(!_loadDiagDone){ _loadDiagDone=true; toast("Loaded "+rows.length+" projects via "+how); }
 }
 
@@ -878,7 +702,7 @@ function togglePanel(){ panel.classList.toggle("collapsed");
   pHead.setAttribute("aria-expanded", String(!panel.classList.contains("collapsed"))); }
 pHead.addEventListener("click", togglePanel);
 pHead.addEventListener("keydown", e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); togglePanel(); }});
-if(window.innerWidth<560) panel.classList.add("collapsed");
+if(window.innerWidth<700) panel.classList.add("collapsed");
 
 const brand=document.getElementById("brand"), brandHead=document.getElementById("brandHead");
 function toggleBrand(){ brand.classList.toggle("collapsed");
@@ -887,20 +711,23 @@ brandHead.addEventListener("click", toggleBrand);
 brandHead.addEventListener("keydown", e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); toggleBrand(); }});
 if(window.innerWidth<560) brand.classList.add("collapsed");
 
-const adminBtn=document.getElementById("adminBtn");
-function refreshAdminBtn(){ adminBtn.textContent = adminMode ? "Admin mode: on (tap to exit)" : "Manage as admin"; }
-refreshAdminBtn();
-adminBtn.addEventListener("click", async ()=>{
-  if(adminMode){ adminMode=false; adminPass=null; try{ sessionStorage.removeItem("shipham_admin"); }catch(e){}
-    refreshAdminBtn(); await loadProjects(); toast("Admin mode off."); return; }
-  if(!gasReady){ toast("Admin needs the Google backend."); return; }
-  const pw=prompt("Enter the admin password:"); if(!pw) return;
-  // The password is checked server-side on every edit/delete, so enable the controls
-  // optimistically (a wrong password simply can't change anything on the backend).
-  adminMode=true; adminPass=pw; try{ sessionStorage.setItem("shipham_admin",pw); }catch(e){}
-  refreshAdminBtn(); toast("Admin mode on — you can edit or delete any project.");
-  await loadProjects();
-});
+function wireAdmin(){
+  const adminBtn=document.getElementById("adminBtn"); if(!adminBtn || adminBtn._wired) return;
+  adminBtn._wired=true;
+  const refresh=()=>{ adminBtn.textContent = adminMode ? "Admin mode: on (tap to exit)" : "Manage as admin"; };
+  refresh();
+  adminBtn.addEventListener("click", async ()=>{
+    if(adminMode){ adminMode=false; adminPass=null; try{ sessionStorage.removeItem("shipham_admin"); }catch(e){}
+      refresh(); await loadProjects(); toast("Admin mode off."); return; }
+    if(!gasReady){ toast("Admin needs the Google backend."); return; }
+    const pw=prompt("Enter the admin password:"); if(!pw) return;
+    // The password is checked server-side on every edit/delete, so enable the controls
+    // optimistically (a wrong password simply can't change anything on the backend).
+    adminMode=true; adminPass=pw; try{ sessionStorage.setItem("shipham_admin",pw); }catch(e){}
+    refresh(); toast("Admin mode on — you can edit or delete any project.");
+    await loadProjects();
+  });
+}
 
 const toastEl=document.getElementById("toast"); let toastT;
 function toast(m){ toastEl.textContent=m; toastEl.classList.add("show");
@@ -1038,237 +865,421 @@ async function submitProject(){
 drawer.addEventListener("submit", e=>{ e.preventDefault(); submitProject(); });
 document.getElementById("saveBtn").addEventListener("click", e=>{ e.preventDefault(); submitProject(); });
 
-/* ---------- Context layers (lazy: fetched only when switched on) ---------- */
-const itemUrlCache={};
-async function itemToQuery(item){
-  if(itemUrlCache[item]) return itemUrlCache[item];
-  const r=await fetch(`https://www.arcgis.com/sharing/rest/content/items/${item}?f=json`);
-  const j=await r.json(); let u=j.url;
-  if(!u) throw new Error("No service URL for item "+item);
-  u=u.replace(/\/$/,""); if(!/\/\d+$/.test(u)) u+="/0";
-  itemUrlCache[item]=u; return u;
-}
-async function sourceBase(src){
-  if(src.url && !/PASTE/i.test(src.url)) return src.url.replace(/\/$/,"");
-  if(src.item) return await itemToQuery(src.item);
-  return null;
-}
-const _palette=["#C0CA33","#FBC02D","#FB8C00","#8D6E63","#6D4C41","#5C6BC0","#7E57C2","#AB47BC","#EC407A","#26C6DA","#42A5F5","#78909C","#A1887F","#D4E157"];
+
+/* =================================================================
+   LAYER CATALOGUE
+   One entry per layer; `f` is the GeoJSON file in layers/ (without
+   the extension), so adding a layer later means dropping a file in
+   that folder and adding a line here.
+     kind: area | wash | line | point | wms
+     t/s : title and the small grey subtitle in the panel
+     c   : colour;  n: property names to try for the popup title
+================================================================= */
+const LAYERS = {
+  /* --- designations & habitats --- */
+  sssi:        {f:"sssi",        t:"Protected wildlife sites", s:"SSSIs · Natural England", c:"#D81B83", kind:"area", n:["SSSI_NAME","NAME"], designation:"SSSI"},
+  lnr:         {f:"lnr",         t:"Local nature reserves",    s:"Natural England",          c:"#00897B", kind:"area", n:["NAME"], designation:"Local nature reserve"},
+  nnr:         {f:"nnr",         t:"National nature reserve",  s:"Natural England",          c:"#00695C", kind:"area", n:["NAME"], designation:"National nature reserve"},
+  sac:         {f:"sac",         t:"Special Areas of Conservation", s:"European designation · Natural England", c:"#7B1FA2", kind:"area", n:["SAC_NAME","NAME"]},
+  "priority-habitats": {f:"priority-habitats", t:"Priority habitats", s:"Habitat inventory · Natural England", c:"#43A047", kind:"wash", colorBy:["Main_Habit","mainhabs","MAIN_HABIT"], n:["Main_Habit","mainhabs"]},
+  "ancient-woodland":  {f:"ancient-woodland",  t:"Ancient woodland", s:"Continuously wooded since 1600 · NE", c:"#1B5E20", kind:"wash", n:["NAME","THEME"]},
+  orchards:    {f:"orchards",    t:"Traditional orchards",     s:"Priority habitat · Natural England", c:"#EF6C00", kind:"wash", n:["NAME"]},
+  "wood-pasture":{f:"wood-pasture",t:"Wood pasture & parkland", s:"Natural England",         c:"#8D6E63", kind:"wash", n:["NAME"]},
+  lnrs:        {f:"lnrs",        t:"Nature recovery (LNRS)",   s:"Somerset habitat priority areas", c:"#4E8E63", kind:"wash", fillProp:"fill", n:["cat"],
+                attribution:'Somerset LNRS &copy; <a href="https://www.somersetwildlife.org/" target="_blank" rel="noopener">Somerset Wildlife Trust</a>'},
+  "nature-projects":{f:"nature-projects", t:"Nature recovery project", s:"Natural England", c:"#2E7D32", kind:"area", n:["Project_Na","NAME"]},
+  "tree-groups":   {f:"tree-groups",   t:"Tree groups",        s:"Canopy outside woodland · NFI", c:"#43A047", kind:"wash", heavy:true},
+  "woodland-nfi":  {f:"woodland-nfi",  t:"Woodland (NFI)",     s:"National Forest Inventory",     c:"#2E7D32", kind:"wash", n:["hab"], heavy:true},
+
+  /* --- landscape & access --- */
+  "national-landscape":{f:"national-landscape", t:"Mendip Hills National Landscape", s:"formerly AONB · Natural England", c:"#6A1B9A", kind:"area", n:["NAME"]},
+  "open-access":   {f:"open-access",   t:"Open access land",   s:"CRoW Act 2000 · Natural England", c:"#558B2F", kind:"wash", n:["NAME"]},
+  "common-land":   {f:"common-land",   t:"Registered common land", s:"CRoW Act 2000 · Natural England", c:"#827717", kind:"wash", n:["NAME","REF"]},
+  prow:        {f:"prow",        t:"Public rights of way",     s:"footpaths, bridleways & byways", c:"#2EE65C", kind:"line", dash:"6 6", n:["ROW_TYPE"]},
+
+  /* --- heritage & history --- */
+  "conservation-areas":  {f:"conservation-areas",  t:"Conservation areas", s:"Historic England", c:"#B71C1C", kind:"area", n:["Name","NAME"]},
+  "listed-buildings":    {f:"listed-buildings",    t:"Listed buildings",   s:"Historic England", c:"#C62828", kind:"point", cluster:true, n:["Name"], grade:"Grade", link:"hyperlink"},
+  "listed-building-areas":{f:"listed-building-areas",t:"Listed building extents", s:"Historic England", c:"#AD1457", kind:"wash", n:["Name"]},
+  "scheduled-monuments": {f:"scheduled-monuments", t:"Scheduled monuments", s:"Historic England", c:"#6D4C41", kind:"area", n:["Name"], link:"hyperlink"},
+  "osm-historic-features":{f:"osm-historic-features", t:"Historic features", s:"earthworks, memorials, crosses · OSM", c:"#795548", kind:"point", n:["name","historic"]},
+  "osm-mining":    {f:"osm-mining",    t:"Mining remains",     s:"adits, shafts & workings · OSM", c:"#4E342E", kind:"point", n:["name","man_made","historic"]},
+  "osm-settlements":{f:"osm-settlements", t:"Villages & hamlets", s:"OpenStreetMap",       c:"#5D4037", kind:"point", n:["name"]},
+
+  /* --- geology & landform --- */
+  "bgs-bedrock":     {kind:"wms", t:"Bedrock geology", s:"BGS 1:625 000", c:"#A1887F",
+                      url:"https://ogc.bgs.ac.uk/cgi-bin/BGS_Bedrock_and_Superficial_Geology/wms",
+                      wms:"GBR_BGS_625k_BLT", opacity:.62, attribution:"Geology &copy; UKRI / British Geological Survey"},
+  "bgs-superficial": {kind:"wms", t:"Superficial deposits", s:"BGS 1:625 000", c:"#FFB74D",
+                      url:"https://ogc.bgs.ac.uk/cgi-bin/BGS_Bedrock_and_Superficial_Geology/wms",
+                      wms:"GBR_BGS_625k_SLT", opacity:.62, attribution:"Geology &copy; UKRI / British Geological Survey"},
+  flood:             {kind:"wms", t:"Surface water flood risk", s:"Environment Agency", c:"#5DA8E0",
+                      url:"https://environment.data.gov.uk/spatialdata/nafra2-risk-of-flooding-from-surface-water/wms",
+                      wms:"rofsw", opacity:.75, attribution:"&copy; Environment Agency",
+                      bounds:[[51.27,-2.87],[51.36,-2.72]]},
+  "osm-caves":     {f:"osm-caves",     t:"Caves & swallets",   s:"Mendip karst · OSM",      c:"#37474F", kind:"point", n:["name","natural"]},
+  "osm-cliffs-rock":{f:"osm-cliffs-rock", t:"Cliffs & rock",   s:"OpenStreetMap",           c:"#6D4C41", kind:"line", n:["name","natural"]},
+  "osm-springs":   {f:"osm-springs",   t:"Springs",            s:"OpenStreetMap",           c:"#0288D1", kind:"point", n:["name","natural"]},
+
+  /* --- water & vegetation --- */
+  "osm-water":     {f:"osm-water",     t:"Rivers, streams & ponds", s:"OpenStreetMap",      c:"#1E88E5", kind:"line", n:["name","waterway","natural"]},
+  "osm-woodland-scrub":{f:"osm-woodland-scrub", t:"Woodland, scrub & heath", s:"OpenStreetMap", c:"#558B2F", kind:"wash", n:["name","natural"]},
+  "osm-trees":     {f:"osm-trees",     t:"Notable trees",      s:"individually mapped · OSM", c:"#2E7D32", kind:"point", small:true, n:["name","species"]},
+
+  /* --- parish assets --- */
+  "osm-community-buildings":{f:"osm-community-buildings", t:"Community buildings", s:"halls, churches, schools · OSM", c:"#00695C", kind:"point", n:["name","amenity"]},
+  "osm-shops-pubs":{f:"osm-shops-pubs",t:"Shops, pubs & cafés", s:"OpenStreetMap",          c:"#F57C00", kind:"point", n:["name","amenity","shop"]},
+  "osm-recreation":{f:"osm-recreation",t:"Recreation & open space", s:"OpenStreetMap",      c:"#7CB342", kind:"wash", n:["name","leisure"]},
+  "osm-street-furniture":{f:"osm-street-furniture", t:"Benches, post boxes & stops", s:"OpenStreetMap", c:"#5C6BC0", kind:"point", small:true, cluster:true, n:["name","amenity","highway","man_made"]},
+  "osm-viewpoints":{f:"osm-viewpoints",t:"Viewpoints & information", s:"OpenStreetMap",     c:"#0097A7", kind:"point", n:["name","tourism"]},
+
+  /* --- live layers (not files) --- */
+  inat:     {kind:"inat",     t:"Recent wildlife sightings", s:"live from iNaturalist", c:"#E0A52E"},
+  projects: {kind:"projects", t:"Community projects",        s:"added by people like you", c:"#1565C0"}
+};
+
+/* =================================================================
+   GROUPS — each is a themed map with its own backdrop and layers.
+   `on` lists the layers switched on when the map opens.
+================================================================= */
+const GROUPS = [
+  { key:"biodiversity", title:"Biodiversity", colour:"#2F5D3A", bg:"#E6F0E7",
+    blurb:"Wildlife sites, habitats and what people are seeing right now.",
+    tagline:"Sightings · habitats · nature sites",
+    icon:'<path d="M12 21c0-7 4-11 9-12 0 7-4 11-9 12zM12 21c0-5-3-8-7-9 0 5 3 8 7 9z"/>',
+    base:"satos", add:true,
+    sections:[
+      ["Living record", ["inat","projects"]],
+      ["Protected sites", ["sssi","lnr","nnr","sac","nature-projects"]],
+      ["Habitats", ["priority-habitats","ancient-woodland","orchards","wood-pasture","lnrs"]],
+      ["Trees & water", ["osm-trees","osm-woodland-scrub","osm-water","tree-groups","woodland-nfi"]]
+    ],
+    on:["inat","projects","sssi","lnr"],
+    highlight:{layer:"sssi", title:"Protected sites nearby", name:["SSSI_NAME","NAME"]} },
+
+  { key:"landscape", title:"Landscape & Heritage", colour:"#6A1B9A", bg:"#F0E8F5",
+    blurb:"The Mendip skyline, protected landscapes, listed buildings and where you can walk.",
+    tagline:"National Landscape · listed buildings · access",
+    icon:'<path d="M3 18l5-7 4 5 3-4 6 6zM7 7h.01"/><circle cx="7" cy="7" r="1.6"/>',
+    base:"os",
+    sections:[
+      ["Designated landscape", ["national-landscape","conservation-areas"]],
+      ["Built heritage", ["listed-buildings","listed-building-areas","scheduled-monuments"]],
+      ["Access & rights of way", ["prow","open-access","common-land"]],
+      ["Views & landform", ["osm-viewpoints","osm-cliffs-rock","osm-woodland-scrub"]]
+    ],
+    on:["national-landscape","prow","listed-buildings"],
+    highlight:{layer:"listed-buildings", title:"Listed buildings", name:["Name"], sub:["Grade"]} },
+
+  { key:"geology", title:"Geology", colour:"#8D6E63", bg:"#F2EBE6",
+    blurb:"Carboniferous limestone, the caves and swallets of the Mendips, and the ground beneath the parish.",
+    tagline:"Bedrock · caves · karst",
+    icon:'<path d="M4 20l5-9 4 4 3-6 4 11z"/><path d="M3 20h18"/>',
+    base:"lidar",
+    sections:[
+      ["The rock beneath", ["bgs-bedrock","bgs-superficial"]],
+      ["Karst & landform", ["osm-caves","osm-cliffs-rock","osm-springs"]],
+      ["Mining & water", ["osm-mining","flood","osm-water"]],
+      ["Geological designations", ["sssi"]]
+    ],
+    on:["bgs-bedrock","osm-caves"],
+    highlight:{layer:"osm-caves", title:"Caves & swallets", name:["name"]} },
+
+  { key:"history", title:"History", colour:"#795548", bg:"#F0E9E4",
+    blurb:"Opens on the 1880s Ordnance Survey. Monuments, old workings and the shape of the village before the motor car.",
+    tagline:"1880s maps · monuments · old workings",
+    icon:'<path d="M5 21V8l7-4 7 4v13"/><path d="M9 21v-6h6v6"/>',
+    base:"nls",
+    sections:[
+      ["Ancient & archaeological", ["scheduled-monuments","osm-historic-features"]],
+      ["Buildings & places", ["listed-buildings","conservation-areas","osm-settlements"]],
+      ["Industry", ["osm-mining"]],
+      ["Old routes", ["prow"]]
+    ],
+    on:["scheduled-monuments","osm-historic-features"],
+    highlight:{layer:"osm-historic-features", title:"Historic features", name:["name","historic"]} },
+
+  { key:"parish", title:"Parish Assets", colour:"#1565C0", bg:"#E3EDF8",
+    blurb:"The everyday village: halls, shops, playing fields, benches, footpaths — and projects people have added.",
+    tagline:"Facilities · footpaths · community projects",
+    icon:'<path d="M3 21h18M6 21V9l6-5 6 5v12"/><path d="M10 21v-5h4v5"/>',
+    base:"os", add:true,
+    sections:[
+      ["Community", ["osm-community-buildings","projects"]],
+      ["Services & recreation", ["osm-shops-pubs","osm-recreation","osm-street-furniture"]],
+      ["Getting about", ["prow","osm-viewpoints"]],
+      ["Risk & water", ["flood","osm-water"]]
+    ],
+    on:["osm-community-buildings","osm-shops-pubs","osm-recreation","projects"],
+    highlight:{layer:"osm-community-buildings", title:"Community buildings", name:["name"], sub:["amenity"]} }
+];
+
+/* =================================================================
+   LAYER ENGINE — builds, lazily fetches and styles each layer.
+================================================================= */
+const _pal=["#C0CA33","#FBC02D","#FB8C00","#8D6E63","#6D4C41","#5C6BC0","#7E57C2","#AB47BC",
+            "#EC407A","#26C6DA","#42A5F5","#78909C","#A1887F","#D4E157","#66BB6A"];
 const _palMap={}; let _palI=0;
-function paletteColor(name){ name=name||"—"; if(!(name in _palMap)){ _palMap[name]=_palette[_palI%_palette.length]; _palI++; } return _palMap[name]; }
-/* Colour a habitat by its type. Green is reserved for woodland/trees so grassland
-   and other habitats never look like woodland. */
-function habitatColor(name){
-  const n=(name||"").toLowerCase();
-  // woodland & trees
-  if(/orchard/.test(n))                                   return "#7CB342"; // lime
-  if(/wood|tree|copse|parkland/.test(n))                  return "#2E7D32"; // green
-  // heath / moor / rush — before generic grass so "purple moor grass" isn't read as grass
-  if(/purple moor|rush pasture/.test(n))                  return "#7B4FA0"; // violet
-  if(/heath|moor/.test(n))                                return "#9C4D9C"; // purple
-  // wetlands — before generic grass so "grazing marsh" etc. aren't read as grass
-  if(/grazing marsh|floodplain/.test(n))                  return "#26A69A"; // teal-green
-  if(/reedbed|swamp/.test(n))                             return "#2E9E8F"; // sea green
-  if(/fen|mire|flush/.test(n))                            return "#1E88A8"; // teal-blue
-  if(/bog/.test(n))                                       return "#5D8AA8"; // slate
-  if(/marsh|wetland/.test(n))                             return "#3DA5C4"; // light blue
-  // grasslands by sub-type
-  if(/calcareous|limestone grass/.test(n))                return "#E0A52E"; // gold
-  if(/acid grass/.test(n))                                return "#C9B037"; // mustard
-  if(/meadow|neutral grass/.test(n))                      return "#F4922B"; // orange
-  if(/semi-improved|semi improved/.test(n))               return "#BDB76B"; // khaki
-  if(/grass|pasture/.test(n))                             return "#D4B14A"; // generic grass
-  // scrub / coastal / other
-  if(/scrub/.test(n))                                     return "#9E9D24"; // olive
-  if(/coast|saltmarsh|dune|shingle|maritime|saline|inter.?tidal|cliff|mudflat/.test(n)) return "#C2A36B"; // sand
-  if(/arable|hedge|cereal/.test(n))                       return "#B07A3C"; // brown
-  if(/rock|scree|limestone pavement|cave|calaminarian|inland rock/.test(n)) return "#9E9E9E"; // grey
-  if(!n) return "#7E57C2";
-  return paletteColor(n);   // anything else → its own stable colour
+function habColor(name){
+  name=String(name||"—");
+  if(/wood|tree|copse|forest/i.test(name)) return "#2E7D32";
+  if(/heath/i.test(name))                  return "#9C4D9C";
+  if(/grass|meadow|pasture/i.test(name))   return "#C9B037";
+  if(/fen|marsh|mire|bog|wet|water/i.test(name)) return "#3DA5C4";
+  if(/orchard/i.test(name))                return "#EF6C00";
+  if(!(name in _palMap)){ _palMap[name]=_pal[_palI%_pal.length]; _palI++; }
+  return _palMap[name];
 }
-function fieldVal(p, keys){ for(const k of keys){ if(p && p[k]!=null && p[k]!=="") return String(p[k]); } return ""; }
-function contextPopup(cfg, p){
-  const fields=["ROW_TYPE","PROW_TYPE","ROWTYPE","path_type","RIGHTOFWAY","prow_ref","PROW_REF","Path_Name","risk_band","hab","Main_Habit","mainhabs","MAIN_HABIT","habitat","Habitat","HABITAT","IFT_IOA","Category","CATEGORY","Woodland_Type","woodland_t","Woodland_T","INSPIREID","inspireid","INSPIRE_ID"];
-  let detail=p.__cat||""; if(!detail){ for(const k of fields){ if(p[k]){ detail=p[k]; break; } } }
-  let h=`<div class="pop"><span class="tag" style="background:${cfg._c}1a;color:${cfg._c}">${esc(cfg.label)}</span>`
-    + (detail?`<h3 style="font-size:.95rem">${esc(detail)}</h3>`:`<p class="by">${esc(cfg.sub)}</p>`);
-  if(cfg.credit) h+=`<p class="by">${esc(cfg.credit)}</p>`;
-  if(cfg.creditUrl) h+=`<a class="link" href="${esc(cfg.creditUrl)}" target="_blank" rel="noopener">${esc(cfg.creditLabel||"View source map →")}</a>`;
-  return h+`</div>`;
+const HIDE=/^(fill|cat|OBJECTID|GlobalID|Shape|FID|Easting|Northing|NGR|CaptureScale)/i;
+const prettyKey = k => k.replace(/_/g," ").replace(/\b\w/g,c=>c.toUpperCase())
+                        .replace(/\bUrl\b/i,"Link").replace(/\bHab\b/i,"Habitat");
+function titleOf(def,p){
+  for(const k of (def.n||[])) if(p[k]) return tidyName(p[k]);
+  for(const k of ["name","Name","NAME"]) if(p[k]) return tidyName(p[k]);
+  return def.t;
 }
-/* Minimal GML (2 or 3) -> GeoJSON parser for the Somerset iShare WFS, which serves no JSON.
-   Handles Point / LineString / Polygon / MultiPolygon / MultiSurface. Coordinates are passed
-   through `proj` when given (e.g. EPSG:27700 easting,northing -> [lon,lat]); with no projector
-   a UK range heuristic normalises whichever lat/lon axis order the server used to [lon,lat]. */
-function gmlToGeoJSON(xmlText, proj){
-  const doc = new DOMParser().parseFromString(xmlText||"", "text/xml");
-  if(!doc || !doc.documentElement) return { type:"FeatureCollection", features:[] };
-  const L = (el,name)=>Array.from(el.getElementsByTagNameNS("*", name));
-  const first = (el,name)=>{ const a=el.getElementsByTagNameNS("*", name); return a.length?a[0]:null; };
-  const pair = proj
-    ? (a,b)=>{ try{ return proj([a,b]); }catch(e){ return [a,b]; } }
-    : (a,b)=> (a>40 && a<62 && b>-12 && b<5) ? [b,a] : [a,b];   // lat,lon -> lon,lat when it looks like UK lat/lon
-  function coordsFromText(t, isCoordinates){
-    if(!t) return []; t=t.trim(); if(!t) return []; const out=[];
-    if(isCoordinates){ t.split(/\s+/).forEach(tok=>{ const p=tok.split(","); if(p.length>=2) out.push(pair(+p[0],+p[1])); }); }
-    else { const n=t.split(/\s+/).map(Number); for(let i=0;i+1<n.length;i+=2) out.push(pair(n[i],n[i+1])); }
-    return out;
+function featurePopup(def,p){
+  const title=titleOf(def,p);
+  let rows="";
+  let n=0;
+  for(const k in p){
+    if(HIDE.test(k) || n>=7) continue;
+    const v=p[k]; if(v==null||v==="") continue;
+    if((def.n||[]).includes(k) && tidyName(v)===title) continue;
+    rows+=`<div style="margin-top:3px"><b style="color:var(--muted);font-weight:600">${esc(prettyKey(k))}:</b> ${linkify(v)}</div>`;
+    n++;
   }
-  function ringCoords(el){
-    const c=first(el,"coordinates"); if(c) return coordsFromText(c.textContent,true);
-    const pl=first(el,"posList");    if(pl) return coordsFromText(pl.textContent,false);
-    const ps=L(el,"pos");            if(ps.length) return ps.map(p=>coordsFromText(p.textContent,false)[0]).filter(Boolean);
-    return [];
+  const link = def.link && p[def.link] ? `<div style="margin-top:7px"><a href="${esc(p[def.link])}" target="_blank" rel="noopener">More detail →</a></div>` : "";
+  return `<div class="pop"><span class="tag" style="background:${def.c}1a;color:${def.c}">${esc(def.t)}</span>
+    <h3>${esc(title)}</h3><div style="font-size:.78rem;line-height:1.45">${rows}</div>${link}</div>`;
+}
+function styleFor(def){
+  if(def.kind==="line")  return f=>({pane:"linePane",color:def.c,weight:3,opacity:.95,dashArray:def.dash||null,fill:false});
+  if(def.kind==="wash")  return f=>{ const p=f.properties||{};
+    const col = def.fillProp&&p[def.fillProp] ? p[def.fillProp]
+              : (def.colorBy ? habColor(def.colorBy.map(k=>p[k]).find(Boolean)) : def.c);
+    return {pane:"fillPane",stroke:false,fillColor:col,fillOpacity:.55}; };
+  return f=>({pane:"linePane",color:def.c,weight:2,fillColor:def.c,fillOpacity:.18});
+}
+/* Attribution is a licence condition for several of these sources — OpenStreetMap's
+   ODbL in particular requires it — so each layer carries its own credit. */
+const ATTRIB={
+  osm:'&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors (ODbL)',
+  ne:'&copy; Natural England (OGL v3)', he:'&copy; Historic England (OGL v3)',
+  fc:'&copy; Forestry Commission (OGL v3)', sc:'Rights of way &copy; Somerset Council'
+};
+const NE_IDS=["sssi","lnr","nnr","sac","priority-habitats","ancient-woodland","orchards",
+              "wood-pasture","open-access","common-land","national-landscape","nature-projects"];
+const HE_IDS=["listed-buildings","listed-building-areas","scheduled-monuments","conservation-areas"];
+function attribFor(id,d){
+  if(d.attribution) return d.attribution;
+  if(id.startsWith("osm-")) return ATTRIB.osm;
+  if(NE_IDS.includes(id))   return ATTRIB.ne;
+  if(HE_IDS.includes(id))   return ATTRIB.he;
+  if(id==="tree-groups"||id==="woodland-nfi") return ATTRIB.fc;
+  if(id==="prow")           return ATTRIB.sc;
+  return undefined;
+}
+const built={}, loaded={}, loading={};
+function layerOf(id){
+  if(built[id]) return built[id];
+  const d=LAYERS[id];
+  if(d.kind==="inat")     return built[id]=inatCluster;
+  if(d.kind==="projects") return built[id]=projLayer;
+  if(d.kind==="wms"){
+    const o={layers:d.wms,format:"image/png",transparent:true,version:"1.1.1",pane:"wmsPane",
+             opacity:d.opacity||.6,maxZoom:20,attribution:d.attribution||""};
+    if(d.bounds) o.bounds=L.latLngBounds(d.bounds);
+    return built[id]=L.tileLayer.wms(d.url,o);
   }
-  function polygonCoords(polyEl){
-    const rings=[];
-    const outer=first(polyEl,"outerBoundaryIs")||first(polyEl,"exterior");
-    if(outer){ const lr=first(outer,"LinearRing"); if(lr){ const r=ringCoords(lr); if(r.length) rings.push(r); } }
-    L(polyEl,"innerBoundaryIs").concat(L(polyEl,"interior")).forEach(inner=>{
-      const lr=first(inner,"LinearRing"); if(lr){ const r=ringCoords(lr); if(r.length) rings.push(r); } });
-    return rings;
+  const gj=L.geoJSON(null,{
+    pane: d.kind==="wash" ? "fillPane" : "linePane",
+    attribution: attribFor(id,d),
+    style: styleFor(d),
+    pointToLayer:(f,ll)=>L.circleMarker(ll,{pane:"linePane",radius:d.small?4:6,color:"#fff",weight:1.6,
+                          fillColor:d.c,fillOpacity:1}),
+    onEachFeature:(f,l)=>{
+      const p=f.properties||{};
+      if(d.designation) bindDesignation(f,l,d.designation,d.c);
+      else l.bindPopup(featurePopup(d,p),{minWidth:210,maxWidth:260});
+    }
+  });
+  built[id]= d.cluster ? L.markerClusterGroup({maxClusterRadius:50,showCoverageOnHover:false}) : gj;
+  built[id]._gj = gj;
+  return built[id];
+}
+async function fetchLayer(id){
+  const d=LAYERS[id];
+  if(!d.f || loaded[id] || loading[id]) return;
+  loading[id]=true;
+  const el=document.getElementById("c-"+id); if(el) el.innerHTML='<span class="spin-sm"></span>';
+  try{
+    const r=await fetch(DATA+d.f+".geojson");
+    if(!r.ok) throw new Error("HTTP "+r.status);
+    const j=await r.json();
+    const lyr=layerOf(id); const target=lyr._gj||lyr;
+    target.addData(j);
+    if(lyr._gj && lyr!==lyr._gj) lyr.addLayer(lyr._gj);
+    loaded[id]=true;
+    setCount("c-"+id,(j.features||[]).length);
+    if(CURRENT && CURRENT.highlight && CURRENT.highlight.layer===id) renderHighlights(CURRENT);
+  }catch(e){
+    console.warn("Layer failed:",id,e);
+    setCount("c-"+id,null); toast("Couldn't load “"+d.t+"”.");
+  }finally{ loading[id]=false; }
+}
+function setLayer(id,on){
+  const lyr=layerOf(id);
+  if(on){
+    map.addLayer(lyr);
+    if(LAYERS[id].kind==="inat"){ if(inatTiles) map.addLayer(inatTiles); loadINat(); }
+    else if(LAYERS[id].kind==="projects") loadProjects();
+    else fetchLayer(id);
+  } else {
+    map.removeLayer(lyr);
+    if(LAYERS[id].kind==="inat" && inatTiles) map.removeLayer(inatTiles);
   }
-  function geomOf(container){
-    const isMulti = L(container,"MultiPolygon").length || L(container,"MultiSurface").length;
-    const polys = L(container,"Polygon");
-    const pt=first(container,"Point"), line=first(container,"LineString");
-    if(isMulti){ const ps=polys.map(polygonCoords).filter(r=>r.length); if(ps.length) return {type:"MultiPolygon",coordinates:ps}; }
-    if(polys.length===1){ const r=polygonCoords(polys[0]); if(r.length) return {type:"Polygon",coordinates:r}; }
-    if(polys.length>1){ const ps=polys.map(polygonCoords).filter(r=>r.length); if(ps.length) return {type:"MultiPolygon",coordinates:ps}; }
-    if(pt){ const c=ringCoords(pt); if(c.length) return {type:"Point",coordinates:c[0]}; }
-    if(line){ const c=ringCoords(line); if(c.length) return {type:"LineString",coordinates:c}; }
-    return null;
+}
+
+/* =================================================================
+   PANEL, SIDEBAR AND GROUP SWITCHING
+================================================================= */
+let CURRENT=null;
+const $=id=>document.getElementById(id);
+function renderPanel(g){
+  let h="";
+  for(const [heading,ids] of g.sections){
+    const avail=ids.filter(i=>LAYERS[i]);
+    if(!avail.length) continue;
+    h+=`<div class="lyrgroup">${esc(heading)}</div>`;
+    for(const id of avail){
+      const d=LAYERS[id], on=g.on.includes(id);
+      const sw = d.kind==="line"
+        ? `<span class="swatch" style="background:transparent;height:0;border:0;border-top:3px dashed ${d.c};width:15px;margin-top:8px;border-radius:0"></span>`
+        : `<span class="swatch" style="background:${d.c}"></span>`;
+      h+=`<label class="layer"><input type="checkbox" data-lyr="${id}"${on?" checked":""}>
+        ${sw}<span class="layer__txt"><b>${esc(d.t)}</b><small>${esc(d.s||"")} <span class="count" id="c-${id}"></span></small></span></label>`;
+    }
   }
-  const featureEls=[];
-  const members=L(doc.documentElement,"featureMember");
-  members.forEach(m=>{ const el=Array.from(m.childNodes).find(n=>n.nodeType===1); if(el) featureEls.push(el); });
-  if(!members.length){ L(doc.documentElement,"featureMembers").forEach(ms=>{
-    Array.from(ms.childNodes).forEach(n=>{ if(n.nodeType===1) featureEls.push(n); }); }); }
-  const feats=[];
-  featureEls.forEach(fEl=>{
-    let geom=null, geomChild=null;
-    Array.from(fEl.childNodes).forEach(ch=>{ if(ch.nodeType!==1||geom) return; const g=geomOf(ch); if(g){ geom=g; geomChild=ch; } });
-    if(!geom) geom=geomOf(fEl);
-    if(!geom) return;
-    const props={};
-    Array.from(fEl.childNodes).forEach(ch=>{
-      if(ch.nodeType!==1||ch===geomChild) return;
-      const ln=ch.localName||ch.nodeName.replace(/^.*:/,"");
-      if(ln==="boundedBy"||ln==="msGeometry") return;
-      if(ch.getElementsByTagNameNS("*","*").length) return;   // skip nested wrappers (e.g. geometry)
-      props[ln]=ch.textContent;
+  h+=`<div class="basemap"><small>Base map</small><div class="row">`;
+  for(const k in BASES) h+=`<button type="button" data-base="${k}">${esc(BASES[k].label)}</button>`;
+  h+=`</div></div>`;
+  h+=`<div style="border-top:1px solid var(--line);margin:8px 8px 0;padding-top:8px">
+      <button id="adminBtn" style="width:100%;border:1px solid var(--line);background:#fff;color:var(--muted);padding:7px;border-radius:9px;font-size:.73rem;font-weight:600;cursor:pointer;font-family:inherit">Manage as admin</button>
+      <div style="text-align:center;font-size:.62rem;color:var(--muted);margin-top:6px;opacity:.7">build 2026-10-05</div></div>`;
+  $("panelBody").innerHTML=h;
+  $("panelBody").querySelectorAll("[data-lyr]").forEach(cb=>
+    cb.addEventListener("change",e=>setLayer(cb.dataset.lyr,e.target.checked)));
+  $("panelBody").querySelectorAll("[data-base]").forEach(b=>
+    b.addEventListener("click",()=>setBase(b.dataset.base)));
+  wireAdmin();
+}
+function renderHighlights(g){
+  const hi=g.highlight, box=$("sidebox"), list=$("sidelist");
+  if(!hi || !loaded[hi.layer]){ box.hidden=true; return; }
+  const lyr=built[hi.layer]; const gj=lyr._gj||lyr;
+  const seen=new Set(); const items=[];
+  gj.eachLayer(l=>{
+    const p=(l.feature&&l.feature.properties)||{};
+    const nm=(hi.name||[]).map(k=>p[k]).find(Boolean);
+    if(!nm) return;
+    const t=tidyName(nm); if(seen.has(t)) return; seen.add(t);
+    const sub=(hi.sub||[]).map(k=>p[k]).find(Boolean);
+    items.push({t,sub,l});
+  });
+  if(!items.length){ box.hidden=true; return; }
+  items.sort((a,b)=>a.t.localeCompare(b.t));
+  $("sideboxTitle").textContent=hi.title||"Highlights";
+  list.innerHTML="";
+  items.slice(0,60).forEach(it=>{
+    const b=document.createElement("button");
+    b.innerHTML=esc(it.t)+(it.sub?`<span class="m">${esc(prettyKey(String(it.sub)))}</span>`:"");
+    b.addEventListener("click",()=>{
+      try{ const t=it.l.getBounds?it.l.getBounds():null;
+        if(t&&t.isValid()) map.fitBounds(t,{padding:[70,70],maxZoom:17});
+        else if(it.l.getLatLng) map.setView(it.l.getLatLng(),17);
+      }catch(e){}
+      it.l.openPopup&&it.l.openPopup();
     });
-    feats.push({ type:"Feature", geometry:geom, properties:props });
+    list.appendChild(b);
   });
-  return { type:"FeatureCollection", features:feats };
+  box.hidden=false;
 }
-async function loadContext(cfg){
-  if(cfg.wms) return;                               // raster overlay — nothing to fetch/clip
-  if(cfg._loaded || cfg._loading) return; cfg._loading=true;
-  const el=document.getElementById("c-"+cfg.key); if(el) el.textContent="· …";
-  if(!cfg.sources || !cfg.sources.some(s=>s.item||(s.url&&!/PASTE/i.test(s.url))||s.geojson||s.wfs)){
-    cfg._loaded=true; cfg._loading=false; if(el) el.textContent="";
-    toast(`${cfg.label}: add its service URL in the config (see README).`); return;
-  }
-  // Inclusion buffer: most overlays use the shared 1.5 km parishBuffer; a layer can ask for
-  // its own distance with bufferKm (e.g. LNRS at 500 m). Whole features are kept if they reach
-  // this buffer — never trimmed — just like the other layers.
-  let incBuf = parishBuffer;
-  if(cfg.bufferKm && parishFeature && typeof turf!=="undefined"){
-    try{ incBuf = cfg._incBuf || (cfg._incBuf = turf.buffer(parishFeature, cfg.bufferKm, {units:"kilometers"})); }catch(e){}
-  }
-  const bb = incBuf ? L.geoJSON(incBuf).getBounds() : map.getBounds();
-  const env=`${bb.getWest()},${bb.getSouth()},${bb.getEast()},${bb.getNorth()}`;
-  const qs=`/query?where=1%3D1&geometry=${env}&geometryType=esriGeometryEnvelope&inSR=4326`
-    +`&spatialRel=esriSpatialRelIntersects&outFields=*&outSR=4326&returnGeometry=true`
-    +`&maxAllowableOffset=0.00002&resultRecordCount=6000&f=geojson`;   // ~2 m generalisation = far less to draw
-  const fast = cfg.fastClip && incBuf;
-  const include = f => {                 // returns the whole feature if it reaches the buffer, else null
-    if(fast) return nearBufferFeature(f, incBuf) ? f : null;   // cheap first-vertex test
-    return clipToBuffer(f, incBuf);                            // exact intersects test — still no trimming
-  };
-  let any=false;
-  for(const src of cfg.sources){
-    try{
-      if(src.geojson){
-        const r=await fetch(src.geojson); if(!r.ok) continue; const j=await r.json();
-        (j.features||[]).forEach(f=>{ const c=include(f); if(!c) return; cfg.layer.addData(c); }); any=true; continue;
-      }
-      if(src.wfs){
-        const w=src.wfs;
-        // iShare/MapServer WFS outputs GML only, and only in EPSG:27700 (British National Grid).
-        // So request in 27700 and reproject each coordinate to WGS84 with proj4 as we parse.
-        if(typeof proj4==="undefined"){ console.warn("LNRS needs proj4 to reproject EPSG:27700 — not loaded."); continue; }
-        const proj = xy => proj4("EPSG:27700","WGS84",xy);
-        const u=w.url+(w.url.indexOf("?")>-1?"&":"?")
-          +`service=WFS&version=1.1.0&request=GetFeature`
-          +`&typename=${encodeURIComponent(w.typeName)}`
-          +`&srsname=urn:ogc:def:crs:EPSG::27700`
-          +`&bbox=${w.bbox||LNRS_BBOX}`;
-        const r=await fetch(u); if(!r.ok) continue;
-        const gj=gmlToGeoJSON(await r.text(), proj);
-        (gj.features||[]).forEach(f=>{ const c=include(f); if(!c) return;
-          c.properties=c.properties||{};
-          if(src.fill) c.properties.__fill=src.fill;
-          if(src.cat)  c.properties.__cat=src.cat;   // friendly habitat name for the popup
-          cfg.layer.addData(c);
-        }); any=true; continue;
-      }
-      const base=await sourceBase(src); if(!base) continue;
-      const r=await fetch(base+qs); if(!r.ok) continue; const j=await r.json();
-      (j.features||[]).forEach(f=>{ const c=include(f); if(!c) return;
-        if(src.fill){ (c.properties=c.properties||{}).__fill=src.fill; }
-        cfg.layer.addData(c);
-      }); any=true;
-    }catch(e){ console.warn("Context layer source failed:", cfg.key, e); }
-  }
-  cfg._loaded=true; cfg._loading=false;
-  if(el) el.textContent="· "+cfg.layer.getLayers().length;
-  if(!any) toast(`Couldn't load ${cfg.label} just now.`);
+function clearGroup(){
+  Object.keys(built).forEach(id=>{ if(map.hasLayer(built[id])) map.removeLayer(built[id]); });
+  if(inatTiles&&map.hasLayer(inatTiles)) map.removeLayer(inatTiles);
+  $("sidebox").hidden=true; $("showcase").hidden=true;
 }
-CONTEXT_LAYERS.forEach(cfg=>{
-  if(cfg.wms){                                   // raster overlay (e.g. EA flood WMS) — no clipping/loading
-    const wopt={ layers:cfg.wms.layers, format:"image/png", transparent:true, version:"1.1.1",
-      opacity: cfg.wms.opacity!=null?cfg.wms.opacity:0.55, maxZoom:20, attribution:"© Environment Agency" };
-    if(cfg.pane) wopt.pane=cfg.pane;
-    if(cfg.wms.bounds) wopt.bounds=L.latLngBounds(cfg.wms.bounds);   // only request tiles over Shipham
-    cfg.layer = L.tileLayer.wms(cfg.wms.url, wopt);
-    const cbw=document.getElementById("lyr-"+cfg.key);
-    if(cbw) cbw.addEventListener("change", e=>{
-      e.target.checked ? map.addLayer(cfg.layer) : map.removeLayer(cfg.layer);
-      const el=document.getElementById("c-"+cfg.key); if(el) el.textContent = e.target.checked ? "· on" : "";
-    });
-    return;
-  }
-  cfg._c = cfg.colorBy ? "#4E8E63" : (cfg.style.fillColor || cfg.style.color);
-  cfg.layer = L.geoJSON(null, {
-    pane: cfg.pane || undefined,
-    attribution: cfg.attribution || undefined,
-    style: f => { const p=f.properties||{};
-      if(p.__fill) return Object.assign({}, cfg.style, { fillColor:p.__fill });
-      if(cfg.colorBy) return Object.assign({}, cfg.style, { fillColor: habitatColor(fieldVal(p, cfg.colorBy)) });
-      return cfg.style; },
-    onEachFeature:(f,l)=>l.bindPopup(contextPopup(cfg, f.properties||{}))
-  });
-  const cb=document.getElementById("lyr-"+cfg.key);
-  if(!cb) return;
-  cb.addEventListener("change", async e=>{
-    if(e.target.checked){ map.addLayer(cfg.layer); await loadContext(cfg); }
-    else map.removeLayer(cfg.layer);
-  });
-});
+function openGroup(key){
+  const g=GROUPS.find(x=>x.key===key) || GROUPS[0];
+  CURRENT=g;
+  clearGroup();
+  document.documentElement.style.setProperty("--g",g.colour);
+  $("grpTag").textContent=g.title; $("grpTag").style.background=g.colour;
+  $("grpTitle").textContent="Shipham, Rowberrow & Star";
+  $("grpBlurb").textContent=g.blurb;
+  renderPanel(g);
+  setBase(g.base);
+  map.addLayer(parishGroup);
+  g.on.forEach(id=>{ if(LAYERS[id]) setLayer(id,true); });
+  $("showcase").hidden = g.key!=="biodiversity";
+  $("addBtn").hidden = !g.add;
+  $("landing").classList.add("hide");
+  $("brand").hidden=false; $("panel").hidden=false; $("backBtn").hidden=false;
+  if(location.hash.slice(1)!==key) history.replaceState(null,"","#"+key);
+  setTimeout(()=>{ refitMap(); if(parishFeature) fitParish(); },60);
+}
+function backToLanding(){
+  CURRENT=null; clearGroup();
+  $("landing").classList.remove("hide");
+  $("brand").hidden=true; $("panel").hidden=true; $("backBtn").hidden=true; $("addBtn").hidden=true;
+  history.replaceState(null,"","#");
+}
+function buildLanding(){
+  $("groupBtns").innerHTML = GROUPS.map(g=>
+    `<button class="grp" data-g="${g.key}" style="--g:${g.colour};--gbg:${g.bg}">
+       <span class="grp__ico"><svg viewBox="0 0 24 24">${g.icon}</svg></span>
+       <span><b>${esc(g.title)}</b><small>${esc(g.blurb)}</small><em>${esc(g.tagline)}</em></span>
+     </button>`).join("");
+  $("groupBtns").querySelectorAll("[data-g]").forEach(b=>
+    b.addEventListener("click",()=>openGroup(b.dataset.g)));
+}
+
+/* ---------- Parish boundary (always drawn) ---------- */
+function fitParish(){
+  try{ map.fitBounds(L.geoJSON(parishFeature).getBounds(),{padding:[40,40],maxZoom:15}); }catch(e){}
+}
+async function loadParish(){
+  try{
+    const r=await fetch(DATA+"parish.geojson"); const gj=await r.json();
+    parishFeature=gj.features[0];
+    L.geoJSON(gj,{pane:"linePane",style:{color:"#ffffff",weight:6,opacity:.85,fill:false}}).addTo(parishGroup);
+    L.geoJSON(gj,{pane:"linePane",style:{color:"#8E4A77",weight:3,opacity:1,dashArray:"9 6",fill:false}})
+      .bindTooltip("Shipham civil parish (Shipham, Rowberrow & Star)",{sticky:true}).addTo(parishGroup);
+    let W=180,S=90,E=-180,N=-90;
+    (function walk(c){ if(typeof c[0]==="number"){ W=Math.min(W,c[0]);E=Math.max(E,c[0]);S=Math.min(S,c[1]);N=Math.max(N,c[1]); }
+      else c.forEach(walk); })(parishFeature.geometry.coordinates);
+    const dx=1.5/(111.32*Math.cos(51.31*Math.PI/180)), dy=1.5/110.57;
+    PARISH_BB=[W-dx,S-dy,E+dx,N+dy];
+  }catch(e){ console.warn("Parish boundary failed",e); }
+}
 
 /* ---------- Go ---------- */
-(async()=>{ await loadParish(); loadArea(true);
-  // switch on any context layers that are ticked by default (e.g. rights of way)
-  CONTEXT_LAYERS.forEach(cfg=>{ const cb=document.getElementById("lyr-"+cfg.key);
-    if(cb && cb.checked){ map.addLayer(cfg.layer); loadContext(cfg); } });
-})();   // parish first → buffer ready → overlays clipped
-loadProjects();
+buildLanding();
+loadParish().then(()=>{
+  const h=location.hash.slice(1);
+  if(h && GROUPS.some(g=>g.key===h)) openGroup(h);
+});
+$("backBtn").addEventListener("click",backToLanding);
+addEventListener("hashchange",()=>{
+  const h=location.hash.slice(1);
+  if(!h) backToLanding();
+  else if(GROUPS.some(g=>g.key===h) && (!CURRENT||CURRENT.key!==h)) openGroup(h);
+});
 
 } /* ===== end initApp ===== */
 
-/* ================= BOOTSTRAP: load map libraries with CDN fallbacks ================= */
+/* ================= BOOTSTRAP: Leaflet + marker clustering ================= */
 function loadScript(urls){
   return new Promise((resolve,reject)=>{ let i=0;
     (function next(){ if(i>=urls.length){ reject(new Error("Failed to load "+urls[0])); return; }
@@ -1283,25 +1294,10 @@ function loadScript(urls){
       "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js",
       "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js",
       "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"]);
-    await Promise.all([
-      loadScript([
-        "https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js",
-        "https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js",
-        "https://cdn.jsdelivr.net/npm/leaflet-draw@1.0.4/dist/leaflet.draw.js"]),
-      loadScript([
-        "https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.min.js",
-        "https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js",
-        "https://cdn.jsdelivr.net/npm/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"])
-    ]);
-    try{ await loadScript([
-      "https://cdn.jsdelivr.net/npm/@turf/turf@7/turf.min.js",
-      "https://unpkg.com/@turf/turf@7/turf.min.js"]); }
-    catch(e){ console.warn("Turf unavailable; 500 m clipping disabled.", e); }
-    try{ await loadScript([
-      "https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.11.0/proj4.js",
-      "https://cdn.jsdelivr.net/npm/proj4@2.11.0/dist/proj4.js",
-      "https://unpkg.com/proj4@2.11.0/dist/proj4.js"]); }
-    catch(e){ console.warn("proj4 unavailable; the LNRS layer (British National Grid) can't be reprojected.", e); }
+    await loadScript([
+      "https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.min.js",
+      "https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js",
+      "https://cdn.jsdelivr.net/npm/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"]);
     initApp();
   }catch(err){
     console.error(err);
@@ -1310,6 +1306,7 @@ function loadScript(urls){
       +'Check your internet connection and refresh the page.</p></div>';
   }
 })();
+
 </script>
 </body>
 </html>
