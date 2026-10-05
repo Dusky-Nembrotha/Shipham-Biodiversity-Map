@@ -153,3 +153,13 @@ OS Data Hub offers no equivalent restriction, so the protection there is
 billing-side: with no payment card on the OS account, exceeding the monthly free
 premium allowance pauses premium access until the next month rather than running
 up a bill.
+
+### The front page photograph
+
+The landing page looks for **`shipham-aerial.jpg`** in the repository root. Drop a
+photograph in with that name and it becomes the backdrop; if the file is absent
+the page falls back to a plain gradient, so nothing breaks either way.
+
+It is the first thing anyone downloads, so resize before committing: about
+**2400 px wide, JPEG quality ~82, under 600 KB**. A landscape crop works best —
+the image is anchored slightly above centre so the horizon sits above the panel.

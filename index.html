@@ -201,11 +201,21 @@
   @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
 
   /* ================= Landing page ================= */
-  #landing{position:fixed;inset:0;z-index:3000;background:linear-gradient(170deg,#F4F1E7,#E7EFE4 60%,#DCE9DD);
-    overflow:auto;display:flex;align-items:center;justify-content:center;padding:26px 18px;
+  /* Aerial photograph of the parish behind the front page. If shipham-aerial.jpg is
+     missing the gradient underneath shows instead, so the page still works. */
+  #landing{position:fixed;inset:0;z-index:3000;overflow:auto;display:flex;
+    align-items:center;justify-content:center;padding:26px 18px;
+    background:linear-gradient(170deg,#F4F1E7,#E7EFE4 60%,#DCE9DD);
     transition:opacity .28s ease,visibility .28s}
+  #landing::before{content:"";position:fixed;inset:0;z-index:-1;
+    background:url("shipham-aerial.jpg") center 42% / cover no-repeat}
+  #landing::after{content:"";position:fixed;inset:0;z-index:-1;
+    background:radial-gradient(125% 95% at 50% 38%,rgba(12,26,18,.06),rgba(12,26,18,.32))}
   #landing.hide{opacity:0;visibility:hidden;pointer-events:none}
-  .land{max-width:980px;width:100%}
+  /* The content sits on frosted glass so it stays readable whatever the photo does. */
+  .land{max-width:1000px;width:100%;background:rgba(251,250,246,.84);backdrop-filter:blur(13px);
+    -webkit-backdrop-filter:blur(13px);border:1px solid rgba(255,255,255,.6);
+    border-radius:22px;padding:24px 26px 20px;box-shadow:0 18px 50px rgba(12,26,18,.3)}
   .land__top{display:flex;gap:18px;align-items:center;margin-bottom:20px}
   .land__sign{width:104px;height:104px;object-fit:cover;border-radius:16px;border:1px solid var(--line);
     background:#fff;flex:none;box-shadow:var(--shadow)}
@@ -215,7 +225,7 @@
   .land__sub{margin:0;color:var(--muted);font-size:.95rem;max-width:46em}
   .groups{display:grid;grid-template-columns:repeat(auto-fit,minmax(248px,1fr));gap:13px}
   .grp{display:flex;gap:13px;align-items:flex-start;text-align:left;cursor:pointer;font-family:inherit;
-    background:rgba(255,255,255,.93);border:1px solid var(--line);border-left:5px solid var(--g,#2F5D3A);
+    background:rgba(255,255,255,.96);border:1px solid var(--line);border-left:5px solid var(--g,#2F5D3A);
     border-radius:var(--radius);padding:15px 16px;box-shadow:0 2px 10px rgba(30,42,35,.07);
     transition:transform .13s ease,box-shadow .13s ease;color:inherit}
   .grp:hover,.grp:focus-visible{transform:translateY(-2px);box-shadow:0 8px 22px rgba(30,42,35,.15);outline:none}
@@ -228,7 +238,7 @@
   .grp small{display:block;color:var(--muted);font-size:.79rem;line-height:1.38}
   .grp em{display:block;margin-top:6px;font-style:normal;font-size:.69rem;color:var(--g,#2F5D3A);
     font-weight:700;text-transform:uppercase;letter-spacing:.045em}
-  .land__foot{margin-top:18px;font-size:.73rem;color:var(--muted);text-align:center;line-height:1.6}
+  .land__foot{margin-top:16px;font-size:.73rem;color:var(--muted);text-align:center;line-height:1.6}
   .land__foot a{color:var(--moss)}
 
   /* ================= Group chrome on the map ================= */
