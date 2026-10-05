@@ -21,6 +21,7 @@
     --shadow:0 6px 24px rgba(30,42,35,.16); --radius:16px;
   }
   *{box-sizing:border-box}
+  [hidden]{display:none!important}
   /* Stop any inherited max-width/height from distorting Leaflet's tiles, markers
      and vector SVG — a common cause of layers scaling/drifting wrong on zoom. */
   .leaflet-container img,.leaflet-pane>svg,.leaflet-pane>canvas,.leaflet-tile,
@@ -41,7 +42,7 @@
   .brand__chev{transition:transform .25s ease;color:var(--muted);font-size:.8rem;margin-top:3px}
   .brand.collapsed .brand__chev{transform:rotate(-90deg)}
   .brand.collapsed .brand__body{display:none}
-  .brand__body{margin-top:8px}
+  .brand__body{margin-top:8px;max-height:calc(100vh - 215px);overflow:auto}
   .brand__img{width:100%;max-height:200px;object-fit:contain;border-radius:10px;display:block;border:1px solid var(--line);background:#fff}
   .showcase{margin-top:11px;display:grid;grid-template-columns:1fr 1fr;gap:7px}
   .showcase .sc-head{grid-column:1/-1;font-size:.62rem;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:1px}
@@ -74,7 +75,7 @@
   .panel__head h2{font-family:"Fraunces",serif;font-weight:600;font-size:.96rem;margin:0}
   .panel__chev{transition:transform .25s ease;color:var(--muted);font-size:.8rem}
   .panel.collapsed .panel__chev{transform:rotate(-90deg)}
-  .panel__body{padding:2px 10px 10px;max-height:62vh;overflow:auto}
+  .panel__body{padding:2px 10px 10px;max-height:calc(100vh - 150px);overflow:auto}
   .panel.collapsed .panel__body{display:none}
 
   .layer{display:flex;align-items:flex-start;gap:10px;padding:8px;border-radius:11px;cursor:pointer}
@@ -89,8 +90,8 @@
 
   .basemap{margin:8px 8px 2px;border-top:1px solid var(--line);padding-top:10px}
   .basemap small{display:block;font-size:.68rem;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em}
-  .basemap .row{display:flex;gap:6px}
-  .basemap button{flex:1;border:1px solid var(--line);background:#fff;color:var(--ink);padding:7px 4px;
+  .basemap .row{display:flex;flex-wrap:wrap;gap:6px}
+  .basemap button{flex:1 1 30%;min-width:74px;border:1px solid var(--line);background:#fff;color:var(--ink);padding:7px 4px;
     border-radius:9px;font-size:.74rem;font-weight:600;cursor:pointer;font-family:inherit}
   .basemap button.active{background:var(--moss);color:#fff;border-color:var(--moss)}
 
@@ -199,7 +200,6 @@
     .drawer{width:100%}
   }
   @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
-</style>
 
   /* ================= Landing page ================= */
   #landing{position:fixed;inset:0;z-index:3000;background:linear-gradient(170deg,#F4F1E7,#E7EFE4 60%,#DCE9DD);
@@ -235,7 +235,7 @@
   /* ================= Group chrome on the map ================= */
   .backBtn{position:absolute;top:14px;left:14px;z-index:1200;display:inline-flex;align-items:center;gap:7px;
     background:rgba(251,250,246,.95);backdrop-filter:blur(6px);border:1px solid var(--line);
-    border-radius:11px;padding:8px 12px;font:600 .8rem/1 inherit;color:var(--ink);cursor:pointer;
+    border-radius:11px;padding:8px 12px;font-family:"Inter",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;font-size:.8rem;font-weight:600;color:var(--ink);cursor:pointer;
     box-shadow:var(--shadow)}
   .backBtn svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round}
   .backBtn:hover{background:#fff}
@@ -249,7 +249,7 @@
   .spin-sm{display:inline-block;width:9px;height:9px;border:2px solid var(--line);border-top-color:var(--moss);
     border-radius:50%;animation:spin .7s linear infinite;vertical-align:-1px}
   .sidebox{margin-top:10px;border-top:1px solid var(--line);padding-top:9px}
-  .sidebox h3{font:700 .72rem/1.3 inherit;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:0 0 6px}
+  .sidebox h3{font-family:"Inter",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;font-size:.72rem;font-weight:700;line-height:1.3;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:0 0 6px}
   .sidelist{display:grid;gap:4px;max-height:210px;overflow:auto}
   .sidelist button{display:block;width:100%;text-align:left;border:1px solid var(--line);background:#fff;
     border-radius:8px;padding:6px 8px;font:inherit;font-size:.76rem;cursor:pointer;color:inherit;line-height:1.25}
@@ -411,16 +411,19 @@ const satLayer = mtReady
       { maxZoom:20, maxNativeZoom:19, attribution:"Imagery &copy; Esri" });
 const osOutdoor = osReady ? L.tileLayer(`https://api.os.uk/maps/raster/v1/zxy/Outdoor_3857/{z}/{x}/{y}.png?key=${OS_API_KEY}`,
       { maxZoom:20, attribution:"Contains OS data &copy; Crown copyright &amp; database right" }) : null;
-const labels = L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}{r}.png",
-      { subdomains:"abcd", maxZoom:20, attribution:"&copy; OpenStreetMap &copy; CARTO" });
+/* Place-name labels to sit over imagery and hillshade. CARTO's keyless raster tiles
+   now return an "API KEY REQUIRED" watermark with HTTP 200, so this uses Esri's
+   keyless reference layer instead. */
+const labels = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",
+      { maxZoom:20, maxNativeZoom:19, attribution:"Labels &copy; Esri" });
 const lidarLayer = L.tileLayer.wms(
   "https://environment.data.gov.uk/spatialdata/lidar-composite-digital-terrain-model-dtm-1m/wms",
   { layers:"Lidar_Composite_Hillshade_DTM_1m", format:"image/png", transparent:false,
     version:"1.1.1", maxZoom:20, attribution:"LIDAR DTM hillshade &copy; Environment Agency (OGL v3)" });
 const nlsLayer = L.tileLayer("https://mapseries-tilesets.s3.amazonaws.com/25_inch/somerset/{z}/{x}/{y}.png",
   { maxZoom:20, maxNativeZoom:20, attribution:"Historical OS 25-inch &copy; National Library of Scotland (CC-BY)" });
-const plainLayer = L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
-  { subdomains:"abcd", maxZoom:20, attribution:"&copy; OpenStreetMap &copy; CARTO" });
+const plainLayer = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+  { maxZoom:19, attribution:'&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors' });
 
 const BASES = {
   satos:  { label:"Satellite + OS", build:()=> osReady ? [satLayer, osOutdoor] : [satLayer, labels] },
@@ -892,7 +895,7 @@ const LAYERS = {
   "woodland-nfi":  {f:"woodland-nfi",  t:"Woodland (NFI)",     s:"National Forest Inventory",     c:"#2E7D32", kind:"wash", n:["hab"], heavy:true},
 
   /* --- landscape & access --- */
-  "national-landscape":{f:"national-landscape", t:"Mendip Hills National Landscape", s:"formerly AONB · Natural England", c:"#6A1B9A", kind:"area", n:["NAME"]},
+  "national-landscape":{f:"national-landscape", t:"Mendip Hills National Landscape", s:"formerly AONB · Natural England", c:"#6A1B9A", kind:"area", faint:true, n:["NAME"]},
   "open-access":   {f:"open-access",   t:"Open access land",   s:"CRoW Act 2000 · Natural England", c:"#558B2F", kind:"wash", n:["NAME"]},
   "common-land":   {f:"common-land",   t:"Registered common land", s:"CRoW Act 2000 · Natural England", c:"#827717", kind:"wash", n:["NAME","REF"]},
   prow:        {f:"prow",        t:"Public rights of way",     s:"footpaths, bridleways & byways", c:"#2EE65C", kind:"line", dash:"6 6", n:["ROW_TYPE"]},
@@ -969,7 +972,7 @@ const GROUPS = [
       ["Views & landform", ["osm-viewpoints","osm-cliffs-rock","osm-woodland-scrub"]]
     ],
     on:["national-landscape","prow","listed-buildings"],
-    highlight:{layer:"listed-buildings", title:"Listed buildings", name:["Name"], sub:["Grade"]} },
+    highlight:{layer:"listed-buildings", title:"Listed buildings", name:["Name"], sub:["Grade"], subPrefix:"Grade "} },
 
   { key:"geology", title:"Geology", colour:"#8D6E63", bg:"#F2EBE6",
     blurb:"Carboniferous limestone, the caves and swallets of the Mendips, and the ground beneath the parish.",
@@ -1059,7 +1062,7 @@ function styleFor(def){
     const col = def.fillProp&&p[def.fillProp] ? p[def.fillProp]
               : (def.colorBy ? habColor(def.colorBy.map(k=>p[k]).find(Boolean)) : def.c);
     return {pane:"fillPane",stroke:false,fillColor:col,fillOpacity:.55}; };
-  return f=>({pane:"linePane",color:def.c,weight:2,fillColor:def.c,fillOpacity:.18});
+  return f=>({pane:"linePane",color:def.c,weight:2,fillColor:def.c,fillOpacity:def.faint?.07:.18});
 }
 /* Attribution is a licence condition for several of these sources — OpenStreetMap's
    ODbL in particular requires it — so each layer carries its own credit. */
@@ -1183,8 +1186,10 @@ function renderHighlights(g){
     const p=(l.feature&&l.feature.properties)||{};
     const nm=(hi.name||[]).map(k=>p[k]).find(Boolean);
     if(!nm) return;
+    if(/^[a-z0-9_]+$/.test(String(nm))) return;   // a raw OSM tag, not a name
     const t=tidyName(nm); if(seen.has(t)) return; seen.add(t);
-    const sub=(hi.sub||[]).map(k=>p[k]).find(Boolean);
+    let sub=(hi.sub||[]).map(k=>p[k]).find(Boolean);
+    if(sub && hi.subPrefix) sub=hi.subPrefix+sub;
     items.push({t,sub,l});
   });
   if(!items.length){ box.hidden=true; return; }
