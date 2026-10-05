@@ -28,11 +28,10 @@
   .leaflet-marker-icon,.leaflet-image-layer{max-width:none!important;max-height:none!important}
   html,body{height:100%;margin:0}
   body{font-family:"Inter",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--ink);
-    background:var(--paper);overflow:hidden;-webkit-tap-highlight-color:transparent;
-    position:relative;height:100vh;height:100dvh}
-  #map{position:absolute;inset:0;background:#aab9b1}
+    background:var(--paper);overflow:hidden;-webkit-tap-highlight-color:transparent}
+  #map{position:fixed;inset:0;background:#aab9b1}
 
-  .brand{position:absolute;top:14px;left:14px;z-index:1000;background:rgba(251,250,246,.94);
+  .brand{position:fixed;top:14px;left:14px;z-index:1000;background:rgba(251,250,246,.94);
     backdrop-filter:blur(6px);border:1px solid var(--line);border-radius:var(--radius);
     box-shadow:var(--shadow);padding:10px 14px;max-width:min(78vw,300px)}
   .brand__head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;cursor:pointer;user-select:none}
@@ -67,7 +66,7 @@
   .proj-label.leaflet-tooltip-top::before,.proj-label.leaflet-tooltip-bottom::before,.proj-label.leaflet-tooltip-left::before,.proj-label.leaflet-tooltip-right::before{display:none}
   .brand p{margin:.5rem 0 0;font-size:.77rem;color:var(--muted);line-height:1.3}
 
-  .panel{position:absolute;top:14px;right:14px;z-index:1000;width:272px;max-width:calc(100vw - 28px);
+  .panel{position:fixed;top:14px;right:14px;z-index:1000;width:272px;max-width:calc(100vw - 28px);
     background:rgba(251,250,246,.96);backdrop-filter:blur(6px);border:1px solid var(--line);
     border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
   .panel__head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:11px 14px;
@@ -95,14 +94,14 @@
     border-radius:9px;font-size:.74rem;font-weight:600;cursor:pointer;font-family:inherit}
   .basemap button.active{background:var(--moss);color:#fff;border-color:var(--moss)}
 
-  .fab{position:absolute;right:16px;bottom:calc(30px + env(safe-area-inset-bottom,0px));z-index:1000;display:inline-flex;align-items:center;gap:9px;
+  .fab{position:fixed;right:16px;bottom:calc(30px + env(safe-area-inset-bottom,0px));z-index:1000;display:inline-flex;align-items:center;gap:9px;
     background:#1565C0;color:#fff;border:none;cursor:pointer;font-family:inherit;font-weight:600;
     font-size:.95rem;padding:14px 20px;border-radius:999px;box-shadow:var(--shadow);
     transition:transform .15s ease, background .15s ease}
   .fab:hover{background:#0D47A1;transform:translateY(-1px)}
   .fab svg{width:18px;height:18px}
 
-  .hint{position:absolute;left:50%;top:14px;transform:translateX(-50%);z-index:1200;background:var(--ink);
+  .hint{position:fixed;left:50%;top:14px;transform:translateX(-50%);z-index:1200;background:var(--ink);
     color:#fff;padding:10px 14px;border-radius:16px;font-size:.82rem;font-weight:500;box-shadow:var(--shadow);
     display:none;flex-wrap:wrap;align-items:center;justify-content:center;gap:8px;
     width:max-content;max-width:min(92vw,440px);text-align:center}
@@ -110,15 +109,15 @@
   .hint span{flex-basis:100%}
   .hint button{background:rgba(255,255,255,.16);border:none;color:#fff;border-radius:999px;padding:5px 14px;
     font-size:.8rem;cursor:pointer;font-family:inherit}
-  #xhair{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:1100;display:none;
+  #xhair{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:1100;display:none;
     pointer-events:none;filter:drop-shadow(0 0 2px rgba(255,255,255,.95))}
   #xhair.show{display:block}
   @media (max-width:560px){ .leaflet-draw-tooltip{display:none} }
 
-  .scrim{position:absolute;inset:0;background:rgba(20,30,24,.32);z-index:1500;opacity:0;pointer-events:none;
+  .scrim{position:fixed;inset:0;background:rgba(20,30,24,.32);z-index:1500;opacity:0;pointer-events:none;
     transition:opacity .25s ease}
   .scrim.show{opacity:1;pointer-events:auto}
-  .drawer{position:absolute;top:0;right:0;height:100%;width:380px;max-width:100vw;z-index:1600;
+  .drawer{position:fixed;top:0;bottom:0;right:0;width:380px;max-width:100vw;z-index:1600;
     background:var(--paper);box-shadow:-8px 0 30px rgba(20,30,24,.18);transform:translateX(100%);visibility:hidden;
     transition:transform .3s cubic-bezier(.4,0,.2,1),visibility 0s linear .3s;display:flex;flex-direction:column}
   .drawer.show{transform:translateX(0);visibility:visible;transition:transform .3s cubic-bezier(.4,0,.2,1),visibility 0s linear 0s}
@@ -183,7 +182,7 @@
     text-shadow:0 1px 3px rgba(0,0,0,.9),0 0 2px rgba(0,0,0,.8);padding:0}
   .place-label::before{display:none}
 
-  .toast{position:absolute;left:50%;bottom:84px;transform:translateX(-50%) translateY(10px);z-index:2000;
+  .toast{position:fixed;left:50%;bottom:84px;transform:translateX(-50%) translateY(10px);z-index:2000;
     background:var(--ink);color:#fff;padding:11px 18px;border-radius:999px;font-size:.85rem;opacity:0;
     pointer-events:none;transition:all .25s ease;box-shadow:var(--shadow);max-width:84vw;text-align:center}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
@@ -233,7 +232,7 @@
   .land__foot a{color:var(--moss)}
 
   /* ================= Group chrome on the map ================= */
-  .backBtn{position:absolute;top:14px;left:14px;z-index:1200;display:inline-flex;align-items:center;gap:7px;
+  .backBtn{position:fixed;top:14px;left:14px;z-index:1200;display:inline-flex;align-items:center;gap:7px;
     background:rgba(251,250,246,.95);backdrop-filter:blur(6px);border:1px solid var(--line);
     border-radius:11px;padding:8px 12px;font-family:"Inter",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;font-size:.8rem;font-weight:600;color:var(--ink);cursor:pointer;
     box-shadow:var(--shadow)}
