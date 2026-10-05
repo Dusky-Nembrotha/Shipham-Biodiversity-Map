@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="initial-scale=1, viewport-fit=cover">
+<title>Viewport check</title>
+<style>
+  html,body{margin:0;height:100%}
+  body{font:16px/1.5 system-ui,sans-serif;background:#FBFAF6;color:#1E2A23}
+  /* The red box is sized exactly like the map: absolute, inset 0 on the body. */
+  #box{position:absolute;inset:0;border:6px solid #D81B83;background:#E8F0EA}
+  #out{position:relative;padding:18px 20px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:15px}
+  h1{font:600 19px/1.3 system-ui;margin:0 0 10px}
+  b{color:#D81B83}
+  button{font:600 15px system-ui;padding:10px 16px;border-radius:9px;border:1px solid #ccc;background:#fff;margin-top:12px}
+</style>
+</head>
+<body>
+<div id="box"></div>
+<div id="out">
+  <h1>Viewport check</h1>
+  <p style="max-width:40em">The pink box is sized exactly like the map. <b>If it does not reach all four
+  edges of the browser window, the bug is reproduced.</b> Send me these numbers.</p>
+  <pre id="n">measuring…</pre>
+  <button onclick="navigator.clipboard&&navigator.clipboard.writeText(document.getElementById('n').textContent).then(()=>alert('Copied'))">Copy numbers</button>
+</div>
+<script>
+function measure(){
+  var d=document.documentElement, b=document.body, box=document.getElementById("box").getBoundingClientRect();
+  var vv=window.visualViewport;
+  var L=[
+    ["window.innerWidth/Height", innerWidth+" x "+innerHeight],
+    ["documentElement.clientW/H", d.clientWidth+" x "+d.clientHeight],
+    ["body.offsetWidth/Height",   b.offsetWidth+" x "+b.offsetHeight],
+    ["pink box (= map size)",     Math.round(box.width)+" x "+Math.round(box.height)],
+    ["screen.width/height",       screen.width+" x "+screen.height],
+    ["screen.avail",              screen.availWidth+" x "+screen.availHeight],
+    ["devicePixelRatio",          devicePixelRatio],
+    ["visualViewport",            vv? Math.round(vv.width)+" x "+Math.round(vv.height)+"  scale="+vv.scale : "n/a"],
+    ["outerWidth/Height",         outerWidth+" x "+outerHeight],
+    ["orientation",               (screen.orientation&&screen.orientation.type)||"?"],
+    ["userAgent",                 navigator.userAgent]
+  ];
+  document.getElementById("n").textContent = L.map(function(r){
+    return (r[0]+"                          ").slice(0,27)+" : "+r[1];
+  }).join("\n");
+}
+measure();
+addEventListener("resize",measure);
+if(window.visualViewport) visualViewport.addEventListener("resize",measure);
+</script>
+</body>
+</html>
