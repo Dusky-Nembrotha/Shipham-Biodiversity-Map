@@ -336,8 +336,6 @@ function initApp(){
 /* =================================================================
    CONFIG — the only part you may need to edit. See README.md.
 ================================================================= */
-const SUPABASE_URL      = "YOUR_SUPABASE_URL";       // shared saving of projects (free)
-const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";  // the public "anon" key
 const OS_API_KEY        = "2dSIGJBjO8WVJuFxhgWj1tvnAQhCXDy8";  // free OS Data Hub key → real OS maps
 const MAPTILER_KEY      = "V6mUPHc6MgzfhbknA10X";    // optional: sharper satellite imagery
 const APPS_SCRIPT_URL   = "https://script.google.com/macros/s/AKfycbzyBmfJVVTEjpoS68ioa_TQDgC3RtBnchsPq7vjPt1yTZUHK9rNB46wc3aQaQUhX1li9g/exec"; // Google Drive/Sheets backend
@@ -396,10 +394,8 @@ const CONTEXT_LAYERS = [
 ];
 /* ================================================================= */
 
-const sbReady = SUPABASE_URL.startsWith("https://") && !SUPABASE_ANON_KEY.includes("YOUR_") && typeof window.supabase!=="undefined";
-const sb = sbReady ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 const gasReady = /^https:\/\/script\.google\.com\/.+\/exec$/.test(APPS_SCRIPT_URL);
-const backendReady = gasReady || sbReady;
+const backendReady = gasReady;
 const osReady = OS_API_KEY && !OS_API_KEY.includes("YOUR_");
 const mtReady = MAPTILER_KEY && !MAPTILER_KEY.includes("YOUR_");
 
@@ -820,9 +816,6 @@ async function loadProjects(){
       try{ const j=await jsonp(APPS_SCRIPT_URL); if(j&&j.ok){ rows=j.projects||[]; how="jsonp"; } }
       catch(e){ note+=" jsonp:"+(e&&e.message||e); }
     }
-  } else if(sbReady){
-    try{ const {data,error}=await sb.from("projects").select("*").order("created_at",{ascending:false});
-      if(error) console.warn(error); else { rows=data||[]; how="supabase"; } }catch(e){ console.warn(e); }
   } else { rows=sessionProjects; how="session"; }
   if(rows===null){
     if(!_loadDiagDone){ _loadDiagDone=true; toast("Couldn't load projects — "+(note||"no response")); }
@@ -1020,17 +1013,6 @@ async function submitProject(){
         catch(err){ /* reply blocked cross-origin; the write already happened server-side */ }
         loadProjects();
       })();
-    } else if(sbReady){
-      const urls=[];
-      for(let i=0;i<files.length;i++){ const blob=await resizeImage(files[i]);
-        const path=`${Date.now()}-${i}-${Math.random().toString(36).slice(2,7)}.jpg`;
-        const {error:upErr}=await sb.storage.from("project-photos").upload(path,blob,{contentType:"image/jpeg"});
-        if(upErr) throw upErr;
-        urls.push(sb.storage.from("project-photos").getPublicUrl(path).data.publicUrl); }
-      const {error}=await sb.from("projects").insert({name,description:desc,contributor:by||null,geom,photos:urls});
-      if(error) throw error;
-      toast("Thank you — your project is now on the map.");
-      await loadProjects();
     } else {
       sessionProjects.unshift({name,description:desc,contributor:by||null,geom,photos:files.map(f=>URL.createObjectURL(f))});
       toast("Added in preview. Connect storage (README) to share it.");
@@ -1297,10 +1279,6 @@ function loadScript(urls){
         "https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js",
         "https://cdn.jsdelivr.net/npm/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"])
     ]);
-    try{ await loadScript([
-      "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js",
-      "https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.min.js"]); }
-    catch(e){ console.warn("Supabase library unavailable; shared saving disabled.", e); }
     try{ await loadScript([
       "https://cdn.jsdelivr.net/npm/@turf/turf@7/turf.min.js",
       "https://unpkg.com/@turf/turf@7/turf.min.js"]); }
