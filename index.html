@@ -234,7 +234,10 @@
       <span class="layer__txt"><b>Parish boundary</b><small>Shipham, Rowberrow &amp; Star</small></span></label>
     <label class="layer"><input type="checkbox" id="lyr-sssi" checked>
       <span class="swatch" style="background:#D81B83"></span>
-      <span class="layer__txt"><b>Protected wildlife sites</b><small>SSSIs — within 1&nbsp;km <span class="count" id="c-sssi"></span></small></span></label>
+      <span class="layer__txt"><b>Protected wildlife sites</b><small>SSSIs — within 2.5&nbsp;km <span class="count" id="c-sssi"></span></small></span></label>
+    <label class="layer"><input type="checkbox" id="lyr-lnr" checked>
+      <span class="swatch" style="background:#00897B"></span>
+      <span class="layer__txt"><b>Local nature reserves</b><small>Natural England — within 2.5&nbsp;km <span class="count" id="c-lnr"></span></small></span></label>
     <label class="layer"><input type="checkbox" id="lyr-inat" checked>
       <span class="swatch" style="background:var(--gorse)"></span>
       <span class="layer__txt"><b>Recent wildlife sightings</b><small>iNaturalist <span class="count" id="c-inat"></span></small></span></label>
@@ -450,6 +453,8 @@ setBase("satos");
 /* ---------- Feature layers ---------- */
 const sssiLayer = L.geoJSON(null, { style:()=>({color:"#D81B83",weight:2,fillColor:"#E0559E",fillOpacity:.18}),
   onEachFeature:(f,l)=>bindDesignation(f,l,"SSSI","#D81B83") }).addTo(map);
+const lnrLayer = L.geoJSON(null, { style:()=>({color:"#00695C",weight:2,fillColor:"#00897B",fillOpacity:.18}),
+  onEachFeature:(f,l)=>bindDesignation(f,l,"Local nature reserve","#00695C") }).addTo(map);
 const inatCluster = L.markerClusterGroup({ maxClusterRadius:45, showCoverageOnHover:false }).addTo(map);
 let inatTiles = null;   // fallback tile layer, used only if the live API can't be reached
 const projLayer = L.geoJSON(null, { style:()=>({color:"#1565C0",weight:2.5,fillColor:"#2196F3",fillOpacity:.28}),
@@ -463,6 +468,7 @@ const parishGroup = L.layerGroup().addTo(map);
 
 bindToggle("lyr-parish", parishGroup);
 bindToggle("lyr-sssi", sssiLayer);
+bindToggle("lyr-lnr", lnrLayer);
 document.getElementById("lyr-inat").addEventListener("change", e=>{
   [inatCluster, inatTiles].forEach(l=>{ if(l){ e.target.checked ? map.addLayer(l) : map.removeLayer(l); } });
 });
@@ -481,8 +487,10 @@ const linkify = s => esc(s).replace(URL_RE, m=>{
 const bboxQS = b => `${b.getWest()},${b.getSouth()},${b.getEast()},${b.getNorth()}`;
 const setCount = (id,n)=>{ const el=document.getElementById(id); if(el) el.textContent="· "+n; };
 const idOf = f => f.id ?? f.properties?.OBJECTID ?? f.properties?.objectid ?? JSON.stringify(f.geometry?.coordinates?.[0]?.[0]||f.geometry);
-function pickName(p){ for(const k in p){ if(/(sssi|lnr).*name|^name$|^par\d*nm$/i.test(k) && p[k]) return p[k]; }
-  for(const k of ["SSSI_NAME","LNR_NAME","NAME","Name","name"]) if(p[k]) return p[k]; return "Unnamed site"; }
+const tidyName = s => /[a-z]/.test(String(s)) ? String(s)
+  : String(s).toLowerCase().replace(/\b[a-z]/g, c=>c.toUpperCase());   // "SLADERS LEIGH" → "Sladers Leigh"
+function pickName(p){ for(const k in p){ if(/(sssi|lnr).*name|^name$|^par\d*nm$/i.test(k) && p[k]) return tidyName(p[k]); }
+  for(const k of ["SSSI_NAME","LNR_NAME","NAME","Name","name"]) if(p[k]) return tidyName(p[k]); return "Unnamed site"; }
 
 /* ---------- Designation popups (photo + info via Wikipedia) ---------- */
 function bindDesignation(f,l,kind,colour){
@@ -629,8 +637,9 @@ function mergeFeatures(layer, set, geojson, countId, buf){
   setCount(countId, set.size);
 }
 async function loadDesignations(b){
-  const s = await queryNE(NE.sssi, b);
-  if(s) mergeFeatures(sssiLayer, seen.sssi, s, "c-sssi", designatedBuffer);  // 1 km for designated sites
+  const [s,r] = await Promise.all([ queryNE(NE.sssi, b), queryNE(NE.lnr, b) ]);
+  if(s) mergeFeatures(sssiLayer, seen.sssi, s, "c-sssi", designatedBuffer);  // 2.5 km for designated sites
+  if(r) mergeFeatures(lnrLayer,  seen.lnr,  r, "c-lnr",  designatedBuffer);
 }
 const sleep = ms => new Promise(r=>setTimeout(r,ms));
 // Timeout without AbortController (AbortSignal can't be cloned in some sandboxes)
