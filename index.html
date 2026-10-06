@@ -238,7 +238,9 @@
       border-width:0 0 1px 0;padding:0 10px;height:48px;
       box-shadow:0 2px 12px rgba(30,42,35,.14)}
     .mapswitch__sel{flex:1 1 auto;max-width:calc(100vw - 190px)}
-    .panel{top:0;right:0;left:auto;bottom:auto;width:auto;max-width:none;
+    /* The list is positioned outside the panel box here, so the rounded-corner
+       overflow:hidden from the wide layout would clip it away entirely. */
+    .panel{top:0;right:0;left:auto;bottom:auto;width:auto;max-width:none;overflow:visible;
       background:transparent;border:0;box-shadow:none;backdrop-filter:none;z-index:1300}
     .panel__head{height:48px;padding:0 12px;box-sizing:border-box;gap:6px}
     .panel__head h2{font-size:.8rem}
