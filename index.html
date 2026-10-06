@@ -918,19 +918,17 @@ const LAYERS = {
 ================================================================= */
 const GROUPS = [
   { key:"overview", title:"Overview", colour:"#2F5D3A", bg:"#E6F0E7",
-    blurb:"The parish at a glance — where you can walk, what is protected, what people have spotted lately, and the village itself. Use the Map buttons above for the detailed maps.",
-    tagline:"Everything in one place",
+    blurb:"The parish at a glance — where you can walk, and the village itself. Use the Map buttons above for wildlife, landscape, geology and history.",
+    tagline:"Paths, places and facilities",
     icon:'<circle cx="12" cy="12" r="9"/><path d="M3.6 9h16.8M3.6 15h16.8M12 3a16 16 0 000 18 16 16 0 000-18"/>',
-    base:"os", add:true,
+    base:"os",
     sections:[
-      ["Living record", ["inat","projects"]],
       ["Getting about", ["prow","osm-viewpoints"]],
-      ["Protected & notable", ["sssi","lnr","national-landscape","conservation-areas"]],
       ["The village", ["osm-community-buildings","osm-shops-pubs","osm-recreation"]],
-      ["Land & water", ["priority-habitats","ancient-woodland","osm-water"]]
+      ["Rivers & streams", ["osm-water"]]
     ],
-    on:["inat","projects","prow","sssi","osm-community-buildings"],
-    highlight:{layer:"sssi", title:"Protected sites nearby", name:["SSSI_NAME","NAME"]} },
+    on:["prow","osm-community-buildings"],
+    highlight:{layer:"osm-community-buildings", title:"Around the village", name:["name"], sub:["amenity"]} },
 
   { key:"biodiversity", title:"Biodiversity", colour:"#2F5D3A", bg:"#E6F0E7",
     blurb:"Wildlife sites, habitats and what people are seeing right now.",
