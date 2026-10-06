@@ -905,6 +905,7 @@ document.getElementById("saveBtn").addEventListener("click", e=>{ e.preventDefau
    the extension), so adding a layer later means dropping a file in
    that folder and adding a line here.
      kind: area | wash | line | point | wms
+     cluster: true groups nearby points - only iNaturalist does this by default
      t/s : title and the small grey subtitle in the panel
      c   : colour;  n: property names to try for the popup title
 ================================================================= */
@@ -932,7 +933,7 @@ const LAYERS = {
 
   /* --- heritage & history --- */
   "conservation-areas":  {f:"conservation-areas",  t:"Conservation areas", s:"Historic England", c:"#B71C1C", kind:"area", n:["Name","NAME"]},
-  "listed-buildings":    {f:"listed-buildings",    t:"Listed buildings",   s:"Historic England", c:"#C62828", kind:"point", cluster:true, n:["Name"], grade:"Grade", link:"hyperlink"},
+  "listed-buildings":    {f:"listed-buildings",    t:"Listed buildings",   s:"Historic England", c:"#C62828", kind:"point", n:["Name"], grade:"Grade", link:"hyperlink"},
   "listed-building-areas":{f:"listed-building-areas",t:"Listed building extents", s:"Historic England", c:"#AD1457", kind:"wash", n:["Name"]},
   "scheduled-monuments": {f:"scheduled-monuments", t:"Scheduled monuments", s:"Historic England", c:"#6D4C41", kind:"area", n:["Name"], link:"hyperlink"},
   "osm-historic-features":{f:"osm-historic-features", t:"Historic features", s:"earthworks, memorials, crosses · OSM", c:"#795548", kind:"point", n:["name","historic"]},
@@ -963,7 +964,7 @@ const LAYERS = {
   "osm-community-buildings":{f:"osm-community-buildings", t:"Community buildings", s:"halls, churches, schools · OSM", c:"#00695C", kind:"point", n:["name","amenity"]},
   "osm-shops-pubs":{f:"osm-shops-pubs",t:"Shops, pubs & cafés", s:"OpenStreetMap",          c:"#F57C00", kind:"point", n:["name","amenity","shop"]},
   "osm-recreation":{f:"osm-recreation",t:"Recreation & open space", s:"OpenStreetMap",      c:"#7CB342", kind:"wash", n:["name","leisure"]},
-  "osm-street-furniture":{f:"osm-street-furniture", t:"Benches, post boxes & stops", s:"OpenStreetMap", c:"#5C6BC0", kind:"point", small:true, cluster:true, n:["name","amenity","highway","man_made"]},
+  "osm-street-furniture":{f:"osm-street-furniture", t:"Benches, post boxes & stops", s:"OpenStreetMap", c:"#5C6BC0", kind:"point", small:true, n:["name","amenity","highway","man_made"]},
   "osm-viewpoints":{f:"osm-viewpoints",t:"Viewpoints & information", s:"OpenStreetMap",     c:"#0097A7", kind:"point", n:["name","tourism"]},
 
   /* --- Somerset HER, served live in British National Grid --- */
