@@ -1000,7 +1000,7 @@ const GROUPS = [
       ["Rivers & streams", ["osm-water"]]
     ],
     on:["prow","osm-community-buildings"],
-    highlight:{layer:"osm-community-buildings", title:"Around the village", name:["name"], sub:["amenity"]} },
+    highlight:{layer:"osm-community-buildings", title:"Around the village", name:["name"], sub:["amenity"], parishOnly:true} },
 
   { key:"biodiversity", title:"Biodiversity", colour:"#2F5D3A", bg:"#E6F0E7",
     blurb:"Wildlife sites, habitats and what people are seeing right now.",
@@ -1029,7 +1029,7 @@ const GROUPS = [
       ["Historic character", ["her-hlc"]]
     ],
     on:["national-landscape","prow","listed-buildings"],
-    highlight:{layer:"listed-buildings", title:"Listed buildings", name:["Name"], sub:["Grade"], subPrefix:"Grade "} },
+    highlight:{layer:"listed-buildings", title:"Listed buildings", name:["Name"], sub:["Grade"], subPrefix:"Grade ", parishOnly:true} },
 
   { key:"geology", title:"Geology", colour:"#8D6E63", bg:"#F2EBE6",
     blurb:"Carboniferous limestone, the caves and swallets of the Mendips, and the ground beneath the parish.",
@@ -1313,7 +1313,7 @@ function renderHighlights(g){
   const hi=g.highlight, box=$("sidebox"), list=$("sidelist");
   if(!hi || !loaded[hi.layer]){ box.hidden=true; return; }
   const lyr=built[hi.layer]; const gj=lyr._gj||lyr;
-  const seen=new Set(); const items=[];
+  const seen=new Set(); let items=[];
   gj.eachLayer(l=>{
     const p=(l.feature&&l.feature.properties)||{};
     const nm=(hi.name||[]).map(k=>p[k]).find(Boolean);
@@ -1322,15 +1322,25 @@ function renderHighlights(g){
     const t=tidyName(nm); if(seen.has(t)) return; seen.add(t);
     let sub=(hi.sub||[]).map(k=>p[k]).find(Boolean);
     if(sub && hi.subPrefix) sub=hi.subPrefix+sub;
-    items.push({t,sub,l});
+    let pt=null;
+    try{ pt = l.getLatLng ? l.getLatLng() : (l.getBounds && l.getBounds().isValid() ? l.getBounds().getCenter() : null); }catch(e){}
+    const ins = pt ? pointInParish(pt.lng,pt.lat) : false;
+    const km  = pt ? kmFromCentre(pt.lng,pt.lat) : 1e9;
+    items.push({t,sub,l,ins,km});
   });
   if(!items.length){ box.hidden=true; return; }
-  items.sort((a,b)=>a.t.localeCompare(b.t));
+  items.sort((a,b)=> (b.ins-a.ins) || (a.km-b.km) || a.t.localeCompare(b.t));
+  if(hi.parishOnly){
+    const inParish=items.filter(x=>x.ins);
+    items = inParish.length>=4 ? inParish : items.slice(0,6);   // top up if the parish has few
+  }
   $("sideboxTitle").textContent=hi.title||"Highlights";
   list.innerHTML="";
   items.slice(0,60).forEach(it=>{
     const b=document.createElement("button");
-    b.innerHTML=esc(it.t)+(it.sub?`<span class="m">${esc(prettyKey(String(it.sub)))}</span>`:"");
+    const note = it.sub ? prettyKey(String(it.sub))
+               : (it.ins ? "" : (it.km<30 ? it.km.toFixed(it.km<10?1:0)+" km away" : ""));
+    b.innerHTML=esc(it.t)+(note?`<span class="m">${esc(note)}</span>`:"");
     b.addEventListener("click",()=>{
       try{ const t=it.l.getBounds?it.l.getBounds():null;
         if(t&&t.isValid()) map.fitBounds(t,{padding:[70,70],maxZoom:17});
@@ -1436,6 +1446,30 @@ map.on("click", async e=>{
 });
 
 /* ---------- Parish boundary (always drawn) ---------- */
+/* The layers reach 2.5 km beyond the parish so neighbouring features still show on
+   the map. The highlights list is a different job, so it puts parish features first
+   and orders the rest by distance. */
+let PARISH_CENTRE=null;
+function pointInParish(lng,lat){
+  if(!parishFeature) return false;
+  const g=parishFeature.geometry;
+  const polys = g.type==="Polygon" ? [g.coordinates] : g.coordinates;
+  for(const poly of polys){
+    const ring=poly[0]; let inside=false;
+    for(let i=0,j=ring.length-1;i<ring.length;j=i++){
+      const xi=ring[i][0], yi=ring[i][1], xj=ring[j][0], yj=ring[j][1];
+      if(((yi>lat)!==(yj>lat)) && (lng < (xj-xi)*(lat-yi)/(yj-yi)+xi)) inside=!inside;
+    }
+    if(inside) return true;
+  }
+  return false;
+}
+function kmFromCentre(lng,lat){
+  if(!PARISH_CENTRE) return 0;
+  const dx=(lng-PARISH_CENTRE[0])*111.32*Math.cos(PARISH_CENTRE[1]*Math.PI/180);
+  const dy=(lat-PARISH_CENTRE[1])*110.57;
+  return Math.sqrt(dx*dx+dy*dy);
+}
 function fitParish(){
   try{ map.fitBounds(L.geoJSON(parishFeature).getBounds(),{padding:[40,40],maxZoom:15}); }catch(e){}
 }
@@ -1456,6 +1490,7 @@ async function loadParish(){
       else c.forEach(walk); })(parishFeature.geometry.coordinates);
     const dx=1.5/(111.32*Math.cos(51.31*Math.PI/180)), dy=1.5/110.57;
     PARISH_BB=[W-dx,S-dy,E+dx,N+dy];
+    PARISH_CENTRE=[(W+E)/2,(S+N)/2];
   }catch(e){ console.warn("Parish boundary failed",e); }
 }
 
