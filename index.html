@@ -1046,7 +1046,7 @@ function habColor(name){
   if(!(name in _palMap)){ _palMap[name]=_pal[_palI%_pal.length]; _palI++; }
   return _palMap[name];
 }
-const HIDE=/^(fill|cat|OBJECTID|GlobalID|Shape|FID|Easting|Northing|CaptureScale|UID|Version|THEMID|THEME|PERIMETER|X_COORD|Y_COORD|ListEntry|HYPERLINK|REF_CODE|MEASURE|LABEL|HabCodes|SHAPE_|objectid|hyperlink|gml_id|ogc_fid|Incid|Habdefver|PriDet|Descrip|UNIQUEID|MAPPINGARE|CACHAIR|ISSU|LATITUDE|LONGITUDE|GRID_REF|SAC_CODE|NGR|ROW_ID|SHAPE|InterQual|S\\d|Orch|Habdef|Mapped|Confid)/i;
+const HIDE=/^(fill|cat|OBJECTID|GlobalID|Shape|FID|Easting|Northing|CaptureScale|UID|Version|THEMID|THEME|PERIMETER|X_COORD|Y_COORD|ListEntry|HYPERLINK|REF_CODE|MEASURE|LABEL|HabCodes|SHAPE_|objectid|hyperlink|gml_id|ogc_fid|Incid|Habdefver|PriDet|Descrip|UNIQUEID|MAPPINGARE|CACHAIR|ISSU|LATITUDE|LONGITUDE|GRID_REF|SAC_CODE|NGR|ROW_ID|SHAPE|InterQual|S\d|Orch|Habdef|Mapped|Confid|bus)/i;
 /* Values arrive as raw tags, epoch milliseconds and long floats; make them readable. */
 function prettyVal(k,v){
   if(typeof v==="number"){
