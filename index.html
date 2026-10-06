@@ -70,7 +70,7 @@
     background:rgba(251,250,246,.96);backdrop-filter:blur(6px);border:1px solid var(--line);
     border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
   .panel__head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:11px 14px;
-    cursor:pointer;user-select:none}
+    cursor:pointer;user-select:none;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
   .panel__head h2{font-family:"Fraunces",serif;font-weight:600;font-size:.96rem;margin:0}
   .panel__chev{transition:transform .25s ease;color:var(--muted);font-size:.8rem}
   .panel.collapsed .panel__chev{transform:rotate(-90deg)}
@@ -240,8 +240,15 @@
     .mapswitch__sel{flex:1 1 auto;max-width:calc(100vw - 190px)}
     .panel{top:0;right:0;left:auto;bottom:auto;width:auto;max-width:none;
       background:transparent;border:0;box-shadow:none;backdrop-filter:none;z-index:1300}
-    .panel__head{height:48px;padding:0 12px;box-sizing:border-box}
+    .panel__head{height:48px;padding:0 12px;box-sizing:border-box;gap:6px}
     .panel__head h2{font-size:.8rem}
+    /* the panel itself is transparent here, so make the control look like a control */
+    .panel__head>*{position:relative;z-index:1}
+    .panel__head::before{content:"";position:absolute;left:6px;right:6px;top:7px;bottom:7px;
+      background:#fff;border:1px solid var(--line);border-radius:999px;z-index:0}
+    .panel:not(.collapsed) .panel__head::before{background:var(--moss);border-color:var(--moss)}
+    .panel:not(.collapsed) .panel__head h2,
+    .panel:not(.collapsed) .panel__chev{color:#fff}
     .panel__body{position:absolute;top:100%;right:0;width:min(94vw,336px);
       background:rgba(251,250,246,.985);backdrop-filter:blur(6px);
       border:1px solid var(--line);border-top:0;border-radius:0 0 0 13px;
@@ -714,7 +721,15 @@ async function deleteProject(id){
 const panel=document.getElementById("panel"), pHead=document.getElementById("panelHead");
 function togglePanel(){ panel.classList.toggle("collapsed");
   pHead.setAttribute("aria-expanded", String(!panel.classList.contains("collapsed"))); }
-pHead.addEventListener("click", togglePanel);
+/* click alone has proved unreliable on some mobile browsers, so a pointer fallback
+   runs too, guarded so the pair cannot double-toggle. */
+let _panelTapped=0;
+function tapPanel(e){
+  const now=Date.now(); if(now-_panelTapped<400) return;
+  _panelTapped=now; if(e&&e.preventDefault) e.preventDefault(); togglePanel();
+}
+pHead.addEventListener("click", tapPanel);
+pHead.addEventListener("pointerup", tapPanel);
 pHead.addEventListener("keydown", e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); togglePanel(); }});
 if(window.innerWidth<=760) panel.classList.add("collapsed");
 
@@ -1415,6 +1430,13 @@ if(/[?&]debug=1/.test(location.search)) addEventListener("load",()=>setTimeout((
     ["leaflet pane rect",  r(mapPane)],
     ["leaflet getSize",    (window.__map? window.__map.getSize().x+" x "+window.__map.getSize().y : "n/a")],
     ["panel rect",         r(document.getElementById("panel"))],
+    ["panel head rect",    r(document.querySelector(".panel__head"))],
+    ["panel collapsed",    document.getElementById("panel").classList.contains("collapsed")],
+    ["panel hidden attr",  document.getElementById("panel").hidden],
+    ["top el over head",   (function(){ var h=document.querySelector(".panel__head");
+        if(!h) return "no head"; var b=h.getBoundingClientRect();
+        var t=document.elementFromPoint(Math.round(b.left+b.width/2),Math.round(b.top+b.height/2));
+        return t ? (t.tagName+" in-head="+!!t.closest(".panel__head")) : "none"; })()],
     ["devicePixelRatio",   devicePixelRatio],
     ["visualViewport",     visualViewport? Math.round(visualViewport.width)+" x "+Math.round(visualViewport.height)+" scale="+visualViewport.scale : "n/a"],
     ["VERDICT",            m && Math.abs(m.getBoundingClientRect().width-innerWidth)<3 ? "#map fills the window" : "#map is SHORT of the window"]
