@@ -1046,11 +1046,11 @@ function habColor(name){
   if(!(name in _palMap)){ _palMap[name]=_pal[_palI%_pal.length]; _palI++; }
   return _palMap[name];
 }
-const HIDE=/^(fill|cat|OBJECTID|GlobalID|Shape|FID|Easting|Northing|CaptureScale|UID|Version|THEMID|THEME|PERIMETER|X_COORD|Y_COORD|ListEntry|HYPERLINK|REF_CODE|MEASURE|LABEL|HabCodes|SHAPE_|objectid|hyperlink|gml_id|ogc_fid|Incid|Habdefver|PriDet|Descrip|UNIQUEID|MAPPINGARE|CACHAIR|ISSU|LATITUDE|LONGITUDE|GRID_REF|SAC_CODE|NGR|ROW_ID|SHAPE|InterQual|S\d|Orch|Habdef|Mapped|Confid|bus)/i;
+const HIDE=/^(fill|cat|OBJECTID|GlobalID|Shape|FID|Easting|Northing|CaptureScale|UID|Version|THEMID|THEME|PERIMETER|X_COORD|Y_COORD|ListEntry|HYPERLINK|REF_CODE|MEASURE|LABEL|HabCodes|SHAPE_|objectid|hyperlink|gml_id|ogc_fid|Incid|Habdefver|PriDet|Descrip|UNIQUEID|MAPPINGARE|CACHAIR|ISSU|LATITUDE|LONGITUDE|GRID_REF|SAC_CODE|NGR|ROW_ID|SHAPE|InterQual|S\d|Orch|Habdef|Mapped|Confid|bus|Created|LastEdit|Last_Edit|NonTO|Globalid|Verified|Modified)/i;
 /* Values arrive as raw tags, epoch milliseconds and long floats; make them readable. */
 function prettyVal(k,v){
   if(typeof v==="number"){
-    if(/date$/i.test(k) && Math.abs(v)>1e10)
+    if(Math.abs(v)>1e11 && Math.abs(v)<4e12)        // epoch milliseconds
       return new Date(v).toLocaleDateString("en-GB",{year:"numeric",month:"long",day:"numeric"});
     return (Math.round(v*100)/100).toLocaleString("en-GB");
   }
@@ -1086,6 +1086,7 @@ function featurePopup(def,p){
   for(const k in p){
     if(HIDE.test(k) || n>=7) continue;
     const v=p[k]; if(v==null||String(v).trim()==="") continue;
+    if(/^(-|n\/?a|none|unknown|not done|not applicable|tbc|null)$/i.test(String(v).trim())) continue;
     const pv=prettyVal(k,v);
     if(String(pv).toLowerCase()===String(title).toLowerCase()) continue;
     rows+=`<div style="margin-top:3px"><b style="color:var(--muted);font-weight:600">${esc(prettyKey(k))}:</b> ${linkify(pv)}</div>`;
