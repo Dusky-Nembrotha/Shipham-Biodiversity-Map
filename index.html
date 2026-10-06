@@ -940,13 +940,13 @@ const LAYERS = {
   "osm-settlements":{f:"osm-settlements", t:"Villages & hamlets", s:"OpenStreetMap",       c:"#5D4037", kind:"point", n:["name"]},
 
   /* --- geology & landform --- */
-  "bgs-bedrock":     {kind:"wms", t:"Bedrock geology", s:"BGS 1:625 000", c:"#A1887F",
+  "bgs-bedrock":     {kind:"wms", info:true, t:"Bedrock geology", s:"BGS 1:625 000", c:"#A1887F",
                       url:"https://ogc.bgs.ac.uk/cgi-bin/BGS_Bedrock_and_Superficial_Geology/wms",
                       wms:"GBR_BGS_625k_BLT", opacity:.62, attribution:"Geology &copy; UKRI / British Geological Survey"},
-  "bgs-superficial": {kind:"wms", t:"Superficial deposits", s:"BGS 1:625 000", c:"#FFB74D",
+  "bgs-superficial": {kind:"wms", info:true, t:"Superficial deposits", s:"BGS 1:625 000", c:"#FFB74D",
                       url:"https://ogc.bgs.ac.uk/cgi-bin/BGS_Bedrock_and_Superficial_Geology/wms",
                       wms:"GBR_BGS_625k_SLT", opacity:.62, attribution:"Geology &copy; UKRI / British Geological Survey"},
-  flood:             {kind:"wms", t:"Surface water flood risk", s:"Environment Agency", c:"#5DA8E0",
+  flood:             {kind:"wms", info:true, t:"Surface water flood risk", s:"Environment Agency", c:"#5DA8E0",
                       url:"https://environment.data.gov.uk/spatialdata/nafra2-risk-of-flooding-from-surface-water/wms",
                       wms:"rofsw", opacity:.75, attribution:"&copy; Environment Agency",
                       bounds:[[51.27,-2.87],[51.36,-2.72]]},
@@ -967,15 +967,15 @@ const LAYERS = {
   "osm-viewpoints":{f:"osm-viewpoints",t:"Viewpoints & information", s:"OpenStreetMap",     c:"#0097A7", kind:"point", n:["name","tourism"]},
 
   /* --- Somerset HER, served live in British National Grid --- */
-  "her-monuments": {kind:"wms", srs:"27700", t:"HER records", s:"monuments, findspots, kilns \u00b7 Somerset HER",
+  "her-monuments": {kind:"wms", info:true, srs:"27700", t:"HER records", s:"monuments, findspots, kilns \u00b7 Somerset HER",
                     c:"#AD1457", url:"https://www.somersetheritage.org.uk/herwms", wms:"Monuments", opacity:.9, attribution:'Somerset HER &copy; <a href="https://swheritage.org.uk/" target="_blank" rel="noopener">South West Heritage Trust</a>'},
   "her-tithe":     {kind:"wms", srs:"27700", t:"Tithe map (1840s)", s:"Somerset HER", c:"#8D6E63",
                     url:"https://www.somersetheritage.org.uk/herwms", wms:"TitheRaster", opacity:.85, attribution:'Somerset HER &copy; <a href="https://swheritage.org.uk/" target="_blank" rel="noopener">South West Heritage Trust</a>'},
-  "her-tithebounds":{kind:"wms", srs:"27700", t:"Tithe field boundaries", s:"Somerset HER", c:"#6D4C41",
+  "her-tithebounds":{kind:"wms", info:true, srs:"27700", t:"Tithe field boundaries", s:"Somerset HER", c:"#6D4C41",
                     url:"https://www.somersetheritage.org.uk/herwms", wms:"TitheBounds", opacity:.9, attribution:'Somerset HER &copy; <a href="https://swheritage.org.uk/" target="_blank" rel="noopener">South West Heritage Trust</a>'},
   "her-ap1946":    {kind:"wms", srs:"27700", t:"RAF aerial photos (1946)", s:"Somerset HER", c:"#546E7A",
                     url:"https://www.somersetheritage.org.uk/herwms", wms:"Ap1946", opacity:1, attribution:'Somerset HER &copy; <a href="https://swheritage.org.uk/" target="_blank" rel="noopener">South West Heritage Trust</a>'},
-  "her-hlc":       {kind:"wms", srs:"27700", t:"Historic landscape character", s:"Somerset HER", c:"#9575CD",
+  "her-hlc":       {kind:"wms", info:true, srs:"27700", t:"Historic landscape character", s:"Somerset HER", c:"#9575CD",
                     url:"https://www.somersetheritage.org.uk/herwms", wms:"HLC", opacity:.55, attribution:'Somerset HER &copy; <a href="https://swheritage.org.uk/" target="_blank" rel="noopener">South West Heritage Trust</a>'},
 
   /* --- live layers (not files) --- */
@@ -1214,12 +1214,17 @@ function layerOf(id){
     renderer: rendererFor(paneOf(d)),
     attribution: attribFor(id,d),
     style: styleFor(d),
-    pointToLayer:(f,ll)=>L.circleMarker(ll,{pane:"linePane",renderer:rendererFor("linePane"),
-                          radius:d.small?5:7,color:"#fff",weight:1.6,fillColor:d.c,fillOpacity:1}),
+    pointToLayer:(f,ll)=>{
+      const m=L.circleMarker(ll,{pane:"linePane",renderer:rendererFor("linePane"),
+                radius:d.small?5:7,color:"#fff",weight:1.6,fillColor:d.c,fillOpacity:1});
+      if(d.designation) bindDesignation(f,m,d.designation,d.c);
+      else m.bindPopup(featurePopup(d,f.properties||{}),{minWidth:210,maxWidth:260});
+      return m;
+    },
     onEachFeature:(f,l)=>{
-      const p=f.properties||{};
+      if(/Point$/.test(f.geometry&&f.geometry.type)) return;   // already bound above
       if(d.designation) bindDesignation(f,l,d.designation,d.c);
-      else l.bindPopup(featurePopup(d,p),{minWidth:210,maxWidth:260});
+      else l.bindPopup(featurePopup(d,f.properties||{}),{minWidth:210,maxWidth:260});
     }
   });
   built[id]= d.cluster ? L.markerClusterGroup({maxClusterRadius:50,showCoverageOnHover:false}) : gj;
@@ -1375,6 +1380,59 @@ function buildSwitcher(){
     `<option value="${g.key}">${esc(g.title)}</option>`).join("");
   $("switchSel").addEventListener("change",e=>openGroup(e.target.value));
 }
+
+/* =================================================================
+   Raster overlays answer WMS GetFeatureInfo, so they are clickable too.
+   BGS and the Environment Agency allow cross-origin reads; the Somerset HER
+   does not, so its reply is shown in a small frame instead.
+================================================================= */
+function infoUrl(d, latlng){
+  const size=map.getSize(), p=map.latLngToContainerPoint(latlng), b=map.getBounds();
+  let srs,bbox;
+  if(d.srs==="27700" && L.CRS.EPSG27700){
+    const a=L.CRS.EPSG27700.project(b.getNorthWest()), c=L.CRS.EPSG27700.project(b.getSouthEast());
+    srs="EPSG:27700";
+    bbox=[Math.min(a.x,c.x),Math.min(a.y,c.y),Math.max(a.x,c.x),Math.max(a.y,c.y)].join(",");
+  } else {
+    srs="EPSG:4326";
+    bbox=[b.getWest(),b.getSouth(),b.getEast(),b.getNorth()].join(",");
+  }
+  const q=new URLSearchParams({SERVICE:"WMS",VERSION:"1.1.1",REQUEST:"GetFeatureInfo",
+    LAYERS:d.wms,QUERY_LAYERS:d.wms,SRS:srs,BBOX:bbox,
+    WIDTH:String(size.x),HEIGHT:String(size.y),
+    X:String(Math.round(p.x)),Y:String(Math.round(p.y)),
+    INFO_FORMAT:"text/html",FEATURE_COUNT:"8"});
+  return d.url+(d.url.indexOf("?")>-1?"&":"?")+q.toString();
+}
+function infoText(html){
+  const doc=new DOMParser().parseFromString(html,"text/html");
+  doc.querySelectorAll("script,style").forEach(n=>n.remove());
+  return (doc.body?doc.body.textContent:"").replace(/\s+/g," ").trim();
+}
+map.on("click", async e=>{
+  const live=Object.keys(LAYERS).filter(id=>LAYERS[id].kind==="wms" && LAYERS[id].info
+                 && built[id] && map.hasLayer(built[id]));
+  if(!live.length) return;
+  const parts=[];
+  for(const id of live){
+    const d=LAYERS[id], url=infoUrl(d,e.latlng);
+    try{
+      const r=await fetch(url);
+      if(!r.ok) throw new Error("HTTP "+r.status);
+      const t=infoText(await r.text());
+      if(t && t.length>1) parts.push(`<b style="color:${d.c}">${esc(d.t)}</b><div>${esc(t).slice(0,600)}</div>`);
+    }catch(_){
+      // blocked cross-origin - show the service's own reply in a frame
+      parts.push(`<b style="color:${d.c}">${esc(d.t)}</b>`
+        +`<iframe src="${esc(url)}" style="width:100%;height:124px;border:0;background:#fff;border-radius:6px" `
+        +`sandbox="allow-same-origin" title="${esc(d.t)} details"></iframe>`);
+    }
+  }
+  if(parts.length) L.popup({minWidth:220,maxWidth:300})
+    .setLatLng(e.latlng).setContent('<div class="pop" style="font-size:.78rem;line-height:1.45">'
+      +parts.join('<hr style="border:0;border-top:1px solid var(--line);margin:7px 0">')+'</div>')
+    .openOn(map);
+});
 
 /* ---------- Parish boundary (always drawn) ---------- */
 function fitParish(){
