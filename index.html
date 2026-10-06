@@ -907,6 +907,18 @@ const LAYERS = {
   "osm-street-furniture":{f:"osm-street-furniture", t:"Benches, post boxes & stops", s:"OpenStreetMap", c:"#5C6BC0", kind:"point", small:true, cluster:true, n:["name","amenity","highway","man_made"]},
   "osm-viewpoints":{f:"osm-viewpoints",t:"Viewpoints & information", s:"OpenStreetMap",     c:"#0097A7", kind:"point", n:["name","tourism"]},
 
+  /* --- Somerset HER, served live in British National Grid --- */
+  "her-monuments": {kind:"wms", srs:"27700", t:"HER records", s:"monuments, findspots, kilns \u00b7 Somerset HER",
+                    c:"#AD1457", url:"https://www.somersetheritage.org.uk/herwms", wms:"Monuments", opacity:.9, attribution:'Somerset HER &copy; <a href="https://swheritage.org.uk/" target="_blank" rel="noopener">South West Heritage Trust</a>'},
+  "her-tithe":     {kind:"wms", srs:"27700", t:"Tithe map (1840s)", s:"Somerset HER", c:"#8D6E63",
+                    url:"https://www.somersetheritage.org.uk/herwms", wms:"TitheRaster", opacity:.85, attribution:'Somerset HER &copy; <a href="https://swheritage.org.uk/" target="_blank" rel="noopener">South West Heritage Trust</a>'},
+  "her-tithebounds":{kind:"wms", srs:"27700", t:"Tithe field boundaries", s:"Somerset HER", c:"#6D4C41",
+                    url:"https://www.somersetheritage.org.uk/herwms", wms:"TitheBounds", opacity:.9, attribution:'Somerset HER &copy; <a href="https://swheritage.org.uk/" target="_blank" rel="noopener">South West Heritage Trust</a>'},
+  "her-ap1946":    {kind:"wms", srs:"27700", t:"RAF aerial photos (1946)", s:"Somerset HER", c:"#546E7A",
+                    url:"https://www.somersetheritage.org.uk/herwms", wms:"Ap1946", opacity:1, attribution:'Somerset HER &copy; <a href="https://swheritage.org.uk/" target="_blank" rel="noopener">South West Heritage Trust</a>'},
+  "her-hlc":       {kind:"wms", srs:"27700", t:"Historic landscape character", s:"Somerset HER", c:"#9575CD",
+                    url:"https://www.somersetheritage.org.uk/herwms", wms:"HLC", opacity:.55, attribution:'Somerset HER &copy; <a href="https://swheritage.org.uk/" target="_blank" rel="noopener">South West Heritage Trust</a>'},
+
   /* --- live layers (not files) --- */
   inat:     {kind:"inat",     t:"Recent wildlife sightings", s:"live from iNaturalist", c:"#E0A52E"},
   projects: {kind:"projects", t:"Community projects",        s:"added by people like you", c:"#1565C0"}
@@ -953,7 +965,8 @@ const GROUPS = [
       ["Designated landscape", ["national-landscape","conservation-areas"]],
       ["Built heritage", ["listed-buildings","listed-building-areas","scheduled-monuments"]],
       ["Access & rights of way", ["prow","open-access","common-land"]],
-      ["Views & landform", ["osm-viewpoints","osm-cliffs-rock","osm-woodland-scrub"]]
+      ["Views & landform", ["osm-viewpoints","osm-cliffs-rock","osm-woodland-scrub"]],
+      ["Historic character", ["her-hlc"]]
     ],
     on:["national-landscape","prow","listed-buildings"],
     highlight:{layer:"listed-buildings", title:"Listed buildings", name:["Name"], sub:["Grade"], subPrefix:"Grade "} },
@@ -978,6 +991,7 @@ const GROUPS = [
     icon:'<path d="M5 21V8l7-4 7 4v13"/><path d="M9 21v-6h6v6"/>',
     base:"nls",
     sections:[
+      ["Somerset HER", ["her-monuments","her-tithe","her-tithebounds","her-ap1946"]],
       ["Ancient & archaeological", ["scheduled-monuments","osm-historic-features"]],
       ["Buildings & places", ["listed-buildings","conservation-areas","osm-settlements"]],
       ["Industry", ["osm-mining"]],
@@ -1105,6 +1119,24 @@ function attribFor(id,d){
   if(id==="prow")           return ATTRIB.sc;
   return undefined;
 }
+/* The Somerset HER service only speaks EPSG:27700, so proj4 is fetched the first time
+   one of its layers is switched on rather than on every visit. */
+let _bngReady=null;
+function ensureBNG(){
+  if(_bngReady) return _bngReady;
+  _bngReady=(async()=>{
+    await loadScript(["https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.11.0/proj4.js",
+                      "https://cdn.jsdelivr.net/npm/proj4@2.11.0/dist/proj4.js"]);
+    await loadScript(["https://cdn.jsdelivr.net/npm/proj4leaflet@1.0.2/src/proj4leaflet.min.js",
+                      "https://unpkg.com/proj4leaflet@1.0.2/src/proj4leaflet.js"]);
+    L.CRS.EPSG27700 = new L.Proj.CRS("EPSG:27700",
+      "+proj=tmerc +lat_0=49 +lon_0=-2 +k=0.9996012717 +x_0=400000 +y_0=-100000 +ellps=airy "
+      +"+towgs84=446.448,-125.157,542.06,0.15,0.247,0.842,-20.489 +units=m +no_defs",
+      { resolutions:[896,448,224,112,56,28,14,7,3.5,1.75,0.875,0.4375,0.21875,0.109375],
+        origin:[-238375,1376256] });
+  })();
+  return _bngReady;
+}
 const built={}, loaded={}, loading={};
 function layerOf(id){
   if(built[id]) return built[id];
@@ -1114,6 +1146,7 @@ function layerOf(id){
   if(d.kind==="wms"){
     const o={layers:d.wms,format:"image/png",transparent:true,version:"1.1.1",pane:"wmsPane",
              opacity:d.opacity||.6,maxZoom:20,attribution:d.attribution||""};
+    if(d.srs==="27700") o.crs=L.CRS.EPSG27700;
     if(d.bounds) o.bounds=L.latLngBounds(d.bounds);
     return built[id]=L.tileLayer.wms(d.url,o);
   }
@@ -1155,6 +1188,17 @@ async function fetchLayer(id){
   }finally{ loading[id]=false; }
 }
 function setLayer(id,on){
+  const d0=LAYERS[id];
+  if(on && d0.srs==="27700" && !L.CRS.EPSG27700){
+    const el=document.getElementById("c-"+id); if(el) el.innerHTML='<span class="spin-sm"></span>';
+    ensureBNG().then(()=>{
+      const cb=document.querySelector('[data-lyr="'+id+'"]');
+      if(cb && cb.checked){ map.addLayer(layerOf(id)); setCount("c-"+id,null); if(el) el.textContent="· on"; }
+      else if(el) el.textContent="";
+    }).catch(e=>{ console.warn("British National Grid support failed",e);
+      toast("Couldn't load the historic map layer."); setCount("c-"+id,null); });
+    return;
+  }
   const lyr=layerOf(id);
   if(on){
     map.addLayer(lyr);
