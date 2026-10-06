@@ -458,9 +458,11 @@ function setBase(mode){
   currentBase.forEach(l=>{ if(l) map.removeLayer(l); });
   const b = BASES[mode] || BASES.satos;
   currentBase = b.build().filter(Boolean);
+  // OS Outdoor is an opaque raster, so it has to be dialled back in the combined
+  // mode or it hides the imagery underneath it completely.
+  if(osOutdoor) osOutdoor.setOpacity(mode==="satos" ? .55 : 1);
   currentBase.forEach((l,i)=>{ l.setZIndex(i+1); l.addTo(map); });
   document.querySelectorAll("[data-base]").forEach(el=>el.classList.toggle("active", el.dataset.base===mode));
-  if(osReady && mode==="os") osOutdoor.setOpacity(1);
 }
 
 /* ---------- Shared feature layers ---------- */
