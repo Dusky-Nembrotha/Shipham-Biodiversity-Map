@@ -200,54 +200,26 @@
   }
   @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
 
-  /* ================= Landing page ================= */
-  /* Aerial photograph of the parish behind the front page. If shipham-aerial.jpg is
-     missing the gradient underneath shows instead, so the page still works. */
-  #landing{position:fixed;inset:0;z-index:3000;overflow:auto;display:flex;
-    align-items:center;justify-content:center;padding:26px 18px;
-    background:linear-gradient(170deg,#F4F1E7,#E7EFE4 60%,#DCE9DD);
-    transition:opacity .28s ease,visibility .28s}
-  #landing::before{content:"";position:fixed;inset:0;z-index:-1;
-    background:url("shipham-aerial.jpg") center 42% / cover no-repeat}
-  #landing::after{content:"";position:fixed;inset:0;z-index:-1;
-    background:radial-gradient(125% 95% at 50% 38%,rgba(12,26,18,.06),rgba(12,26,18,.32))}
-  #landing.hide{opacity:0;visibility:hidden;pointer-events:none}
-  /* The content sits on frosted glass so it stays readable whatever the photo does. */
-  .land{max-width:1000px;width:100%;background:rgba(251,250,246,.84);backdrop-filter:blur(13px);
-    -webkit-backdrop-filter:blur(13px);border:1px solid rgba(255,255,255,.6);
-    border-radius:22px;padding:24px 26px 20px;box-shadow:0 18px 50px rgba(12,26,18,.3)}
-  .land__top{display:flex;gap:18px;align-items:center;margin-bottom:20px}
-  .land__sign{width:104px;height:104px;object-fit:cover;border-radius:16px;border:1px solid var(--line);
-    background:#fff;flex:none;box-shadow:var(--shadow)}
-  .land h1{font-family:"Fraunces",serif;font-weight:700;font-size:clamp(1.5rem,4.2vw,2.3rem);margin:0 0 5px;
-    line-height:1.04;letter-spacing:-.015em;color:var(--moss)}
-  .land h1 .leaf{color:var(--heather)}
-  .land__sub{margin:0;color:var(--muted);font-size:.95rem;max-width:46em}
-  .groups{display:grid;grid-template-columns:repeat(auto-fit,minmax(248px,1fr));gap:13px}
-  .grp{display:flex;gap:13px;align-items:flex-start;text-align:left;cursor:pointer;font-family:inherit;
-    background:rgba(255,255,255,.96);border:1px solid var(--line);border-left:5px solid var(--g,#2F5D3A);
-    border-radius:var(--radius);padding:15px 16px;box-shadow:0 2px 10px rgba(30,42,35,.07);
-    transition:transform .13s ease,box-shadow .13s ease;color:inherit}
-  .grp:hover,.grp:focus-visible{transform:translateY(-2px);box-shadow:0 8px 22px rgba(30,42,35,.15);outline:none}
-  .grp:focus-visible{border-color:var(--g,#2F5D3A)}
-  .grp__ico{width:40px;height:40px;flex:none;border-radius:11px;display:grid;place-items:center;
-    background:var(--gbg,#EAF1EA);color:var(--g,#2F5D3A)}
-  .grp__ico svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.9;
-    stroke-linecap:round;stroke-linejoin:round}
-  .grp b{display:block;font-size:1.02rem;font-weight:700;color:var(--ink);line-height:1.2;margin-bottom:3px}
-  .grp small{display:block;color:var(--muted);font-size:.79rem;line-height:1.38}
-  .grp em{display:block;margin-top:6px;font-style:normal;font-size:.69rem;color:var(--g,#2F5D3A);
-    font-weight:700;text-transform:uppercase;letter-spacing:.045em}
-  .land__foot{margin-top:16px;font-size:.73rem;color:var(--muted);text-align:center;line-height:1.6}
-  .land__foot a{color:var(--moss)}
+  /* ================= Map switcher ================= */
+  .mapswitch{position:fixed;top:14px;left:14px;z-index:1200;display:flex;align-items:center;gap:8px;
+    background:rgba(251,250,246,.95);backdrop-filter:blur(6px);border:1px solid var(--line);
+    border-radius:12px;padding:7px 10px;box-shadow:var(--shadow);max-width:calc(100vw - 28px)}
+  .mapswitch__lbl{font-size:.63rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;
+    color:var(--muted);flex:none}
+  .mapswitch__btns{display:flex;flex-wrap:wrap;gap:5px}
+  .mapswitch__btns button{border:1px solid var(--line);background:#fff;color:var(--ink);
+    padding:6px 11px;border-radius:999px;font:600 .76rem/1 inherit;font-family:inherit;cursor:pointer;
+    white-space:nowrap;transition:background .12s,color .12s,border-color .12s}
+  .mapswitch__btns button:hover{border-color:var(--g,#2F5D3A)}
+  .mapswitch__btns button.active{background:var(--g,#2F5D3A);border-color:var(--g,#2F5D3A);color:#fff}
+  .mapswitch__sel{display:none;font-family:inherit;font-size:.84rem;font-weight:600;color:var(--ink);
+    border:1px solid var(--line);border-radius:9px;padding:7px 9px;background:#fff;max-width:54vw}
+  @media (max-width:760px){
+    .mapswitch__btns{display:none}
+    .mapswitch__sel{display:block}
+  }
 
   /* ================= Group chrome on the map ================= */
-  .backBtn{position:fixed;top:14px;left:14px;z-index:1200;display:inline-flex;align-items:center;gap:7px;
-    background:rgba(251,250,246,.95);backdrop-filter:blur(6px);border:1px solid var(--line);
-    border-radius:11px;padding:8px 12px;font-family:"Inter",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;font-size:.8rem;font-weight:600;color:var(--ink);cursor:pointer;
-    box-shadow:var(--shadow)}
-  .backBtn svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round}
-  .backBtn:hover{background:#fff}
   .brand{top:60px}
   .grpTag{display:inline-block;font-size:.63rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;
     color:#fff;background:var(--g,#2F5D3A);padding:3px 8px;border-radius:999px;margin-bottom:7px}
@@ -270,9 +242,11 @@
 
 <div id="map"></div>
 
-<button class="backBtn" id="backBtn" hidden>
-  <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg> All maps
-</button>
+<div class="mapswitch" id="mapswitch">
+  <span class="mapswitch__lbl">Map</span>
+  <div class="mapswitch__btns" id="switchBtns"></div>
+  <select class="mapswitch__sel" id="switchSel" aria-label="Choose a map"></select>
+</div>
 
 <div class="brand" id="brand" hidden>
   <div class="brand__head" id="brandHead" role="button" tabindex="0" aria-expanded="true">
@@ -280,6 +254,8 @@
     <span class="brand__chev">▾</span>
   </div>
   <div class="brand__body">
+    <img class="brand__img" id="brandImg" src="shipham-aerial.jpg" alt="Shipham from the air" hidden
+         onerror="this.dataset.failed='1';this.hidden=true">
     <p id="grpBlurb"></p>
     <div id="showcase" class="showcase" hidden></div>
     <div id="sidebox" class="sidebox" hidden>
@@ -296,24 +272,6 @@
   <div class="panel__body" id="panelBody"></div>
 </aside>
 
-<div id="landing">
-  <div class="land">
-    <div class="land__top">
-      <img class="land__sign" src="shipham-sign.jpg" alt="Shipham village sign" onerror="this.style.display='none'">
-      <div>
-        <h1>Shipham Parish Maps <span class="leaf">✿</span></h1>
-        <p class="land__sub">Nature, landscape and history across Shipham, Rowberrow and Star.
-          Choose a map to explore — each one opens with its own layers and backdrop.</p>
-      </div>
-    </div>
-    <div class="groups" id="groupBtns"></div>
-    <p class="land__foot">
-      Open data from Natural England, Historic England, the Environment Agency, Ordnance Survey,
-      OpenStreetMap, the National Library of Scotland and Somerset Wildlife Trust.
-      <br>Sightings come live from the <a href="https://www.inaturalist.org/" target="_blank" rel="noopener">iNaturalist</a> community.
-    </p>
-  </div>
-</div>
 
 <div class="hint" id="hint">
   <span>Aim the crosshair, tap “Add point”. One point = a single spot; 3+ = an area.</span>
@@ -959,6 +917,21 @@ const LAYERS = {
    `on` lists the layers switched on when the map opens.
 ================================================================= */
 const GROUPS = [
+  { key:"overview", title:"Overview", colour:"#2F5D3A", bg:"#E6F0E7",
+    blurb:"The parish at a glance — where you can walk, what is protected, what people have spotted lately, and the village itself. Use the Map buttons above for the detailed maps.",
+    tagline:"Everything in one place",
+    icon:'<circle cx="12" cy="12" r="9"/><path d="M3.6 9h16.8M3.6 15h16.8M12 3a16 16 0 000 18 16 16 0 000-18"/>',
+    base:"os", add:true,
+    sections:[
+      ["Living record", ["inat","projects"]],
+      ["Getting about", ["prow","osm-viewpoints"]],
+      ["Protected & notable", ["sssi","lnr","national-landscape","conservation-areas"]],
+      ["The village", ["osm-community-buildings","osm-shops-pubs","osm-recreation"]],
+      ["Land & water", ["priority-habitats","ancient-woodland","osm-water"]]
+    ],
+    on:["inat","projects","prow","sssi","osm-community-buildings"],
+    highlight:{layer:"sssi", title:"Protected sites nearby", name:["SSSI_NAME","NAME"]} },
+
   { key:"biodiversity", title:"Biodiversity", colour:"#2F5D3A", bg:"#E6F0E7",
     blurb:"Wildlife sites, habitats and what people are seeing right now.",
     tagline:"Sightings · habitats · nature sites",
@@ -1281,25 +1254,25 @@ function openGroup(key){
   g.on.forEach(id=>{ if(LAYERS[id]) setLayer(id,true); });
   $("showcase").hidden = g.key!=="biodiversity";
   $("addBtn").hidden = !g.add;
-  $("landing").classList.add("hide");
-  $("brand").hidden=false; $("panel").hidden=false; $("backBtn").hidden=false;
+  $("brand").hidden=false; $("panel").hidden=false;
+  $("brandImg").hidden = g.key!=="overview" || $("brandImg").dataset.failed==="1";
+  markSwitcher(g.key);
   if(location.hash.slice(1)!==key) history.replaceState(null,"","#"+key);
   setTimeout(()=>{ refitMap(); if(parishFeature) fitParish(); },60);
 }
-function backToLanding(){
-  CURRENT=null; clearGroup();
-  $("landing").classList.remove("hide");
-  $("brand").hidden=true; $("panel").hidden=true; $("backBtn").hidden=true; $("addBtn").hidden=true;
-  history.replaceState(null,"","#");
+function markSwitcher(key){
+  $("switchBtns").querySelectorAll("[data-g]").forEach(b=>b.classList.toggle("active",b.dataset.g===key));
+  $("switchSel").value=key;
 }
-function buildLanding(){
-  $("groupBtns").innerHTML = GROUPS.map(g=>
-    `<button class="grp" data-g="${g.key}" style="--g:${g.colour};--gbg:${g.bg}">
-       <span class="grp__ico"><svg viewBox="0 0 24 24">${g.icon}</svg></span>
-       <span><b>${esc(g.title)}</b><small>${esc(g.blurb)}</small><em>${esc(g.tagline)}</em></span>
-     </button>`).join("");
-  $("groupBtns").querySelectorAll("[data-g]").forEach(b=>
+/* Buttons on a wide screen, a dropdown on a narrow one — both drive the same thing. */
+function buildSwitcher(){
+  $("switchBtns").innerHTML = GROUPS.map(g=>
+    `<button type="button" data-g="${g.key}" title="${esc(g.blurb)}">${esc(g.title)}</button>`).join("");
+  $("switchBtns").querySelectorAll("[data-g]").forEach(b=>
     b.addEventListener("click",()=>openGroup(b.dataset.g)));
+  $("switchSel").innerHTML = GROUPS.map(g=>
+    `<option value="${g.key}">${esc(g.title)}</option>`).join("");
+  $("switchSel").addEventListener("change",e=>openGroup(e.target.value));
 }
 
 /* ---------- Parish boundary (always drawn) ---------- */
@@ -1327,16 +1300,15 @@ async function loadParish(){
 }
 
 /* ---------- Go ---------- */
-buildLanding();
+buildSwitcher();
 loadParish().then(()=>{
   const h=location.hash.slice(1);
-  if(h && GROUPS.some(g=>g.key===h)) openGroup(h);
+  openGroup(GROUPS.some(g=>g.key===h) ? h : "overview");
 });
-$("backBtn").addEventListener("click",backToLanding);
 addEventListener("hashchange",()=>{
   const h=location.hash.slice(1);
-  if(!h) backToLanding();
-  else if(GROUPS.some(g=>g.key===h) && (!CURRENT||CURRENT.key!==h)) openGroup(h);
+  const key = GROUPS.some(g=>g.key===h) ? h : "overview";
+  if(!CURRENT || CURRENT.key!==key) openGroup(key);
 });
 
 } /* ===== end initApp ===== */
@@ -1360,7 +1332,6 @@ if(/[?&]debug=1/.test(location.search)) addEventListener("load",()=>setTimeout((
     ["#map computed",      cs(m)],
     ["leaflet pane rect",  r(mapPane)],
     ["leaflet getSize",    (window.__map? window.__map.getSize().x+" x "+window.__map.getSize().y : "n/a")],
-    ["#landing rect",      r(document.getElementById("landing"))],
     ["panel rect",         r(document.getElementById("panel"))],
     ["devicePixelRatio",   devicePixelRatio],
     ["visualViewport",     visualViewport? Math.round(visualViewport.width)+" x "+Math.round(visualViewport.height)+" scale="+visualViewport.scale : "n/a"],
