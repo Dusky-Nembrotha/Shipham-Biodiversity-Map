@@ -418,10 +418,12 @@ addEventListener("orientationchange", ()=>setTimeout(refitMap,200));
 if(window.visualViewport) visualViewport.addEventListener("resize", refitMap);
 
 /* Background panes, below the default overlayPane (400) used by points and lines. */
-map.createPane("fillPane"); map.getPane("fillPane").style.zIndex = 350;   // habitat washes
-map.createPane("wmsPane");  map.getPane("wmsPane").style.zIndex  = 360;   // raster overlays
-map.createPane("areaPane"); map.getPane("areaPane").style.zIndex = 380;   // designation outlines
-map.createPane("linePane"); map.getPane("linePane").style.zIndex = 420;   // lines and points, always clickable
+map.createPane("wmsPane"); map.getPane("wmsPane").style.zIndex = 360;    // raster overlays
+/* Every vector layer shares one canvas. Giving each kind its own pane looked tidier
+   but each pane gets a full-size canvas, and the topmost one receives all the clicks,
+   so polygons underneath could never be selected. Stacking is handled by draw order
+   instead: washes to the back, points and lines to the front. */
+const VEC = L.canvas({ padding:0.3, tolerance:8 });
 
 /* ---------- Base maps ---------- */
 const satLayer = mtReady
@@ -469,9 +471,9 @@ function setBase(mode){
 const parishGroup = L.layerGroup();
 const inatCluster = L.markerClusterGroup({ maxClusterRadius:45, showCoverageOnHover:false });
 let inatTiles = null;
-const projLayer = L.geoJSON(null, { pane:"linePane",
+const projLayer = L.geoJSON(null, { renderer:VEC,
   style:()=>({color:"#1565C0",weight:2.5,fillColor:"#2196F3",fillOpacity:.28}),
-  pointToLayer:(f,ll)=>L.circleMarker(ll,{radius:8,color:"#fff",weight:2,fillColor:"#1565C0",fillOpacity:1}),
+  pointToLayer:(f,ll)=>L.circleMarker(ll,{renderer:VEC,radius:8,color:"#fff",weight:2,fillColor:"#1565C0",fillOpacity:1}),
   onEachFeature:(f,l)=>{ l._projData=f.properties; if(f.properties.id) projectLayers[f.properties.id]=l;
     l.bindPopup(projectPopup(f.properties));
     if(f.properties.name){ const isPt=f.geometry&&f.geometry.type==="Point";
@@ -1144,22 +1146,28 @@ function featurePopup(def,p){
 const isPoint = f => !!(f && f.geometry && /Point$/.test(f.geometry.type));
 function styleFor(def){
   return f=>{
-    // Points keep the pane and size pointToLayer gave them; only their colour is ours.
-    if(isPoint(f)) return {pane:"linePane",color:"#fff",weight:1.6,fillColor:def.c,fillOpacity:1};
-    if(def.kind==="line") return {pane:"linePane",color:def.c,weight:3,opacity:.95,dashArray:def.dash||null,fill:false};
+    // Points keep the size pointToLayer gave them; only their colour is ours.
+    if(isPoint(f)) return {color:"#fff",weight:1.6,fillColor:def.c,fillOpacity:1};
+    if(def.kind==="line") return {color:def.c,weight:3,opacity:.95,dashArray:def.dash||null,fill:false};
     if(def.kind==="wash"){ const p=f.properties||{};
       const col = def.fillProp&&p[def.fillProp] ? p[def.fillProp]
                 : (def.colorBy ? habColor(def.colorBy.map(k=>p[k]).find(Boolean)) : def.c);
-      return {pane:"fillPane",stroke:false,fillColor:col,fillOpacity:.55}; }
-    return {pane:"areaPane",color:def.c,weight:2,fillColor:def.c,fillOpacity:def.faint?.07:.18};
+      return {stroke:false,fillColor:col,fillOpacity:.55}; }
+    return {color:def.c,weight:2,fillColor:def.c,fillOpacity:def.faint?.07:.18};
   };
 }
 /* One canvas per pane, with a tap tolerance — a 4px dot is otherwise almost
    impossible to hit with a finger. */
-const paneOf = d => d.kind==="wash" ? "fillPane" : (d.kind==="area" ? "areaPane" : "linePane");
-const RENDERERS={};
-const rendererFor = pane => RENDERERS[pane] ||
-  (RENDERERS[pane]=L.canvas({pane:pane, tolerance: pane==="linePane" ? 10 : 4}));
+/* Washes and areas sit behind; lines and points in front and therefore clickable. */
+const toBack = d => d.kind==="wash" || d.kind==="area";
+function restack(){
+  Object.keys(built).forEach(id=>{
+    const d=LAYERS[id], l=built[id];
+    if(!d || !l || d.kind==="wms" || !map.hasLayer(l)) return;
+    try{ toBack(d) ? l.bringToBack() : l.bringToFront(); }catch(e){}
+  });
+  try{ parishGroup.eachLayer(l=>l.bringToFront && l.bringToFront()); }catch(e){}
+}
 /* Attribution is a licence condition for several of these sources — OpenStreetMap's
    ODbL in particular requires it — so each layer carries its own credit. */
 const ATTRIB={
@@ -1211,12 +1219,11 @@ function layerOf(id){
     return built[id]=L.tileLayer.wms(d.url,o);
   }
   const gj=L.geoJSON(null,{
-    pane: paneOf(d),
-    renderer: rendererFor(paneOf(d)),
+    renderer: VEC,
     attribution: attribFor(id,d),
     style: styleFor(d),
     pointToLayer:(f,ll)=>{
-      const m=L.circleMarker(ll,{pane:"linePane",renderer:rendererFor("linePane"),
+      const m=L.circleMarker(ll,{renderer:VEC,
                 radius:d.small?5:7,color:"#fff",weight:1.6,fillColor:d.c,fillOpacity:1});
       if(d.designation) bindDesignation(f,m,d.designation,d.c);
       else m.bindPopup(featurePopup(d,f.properties||{}),{minWidth:210,maxWidth:260});
@@ -1244,7 +1251,7 @@ async function fetchLayer(id){
     const lyr=layerOf(id); const target=lyr._gj||lyr;
     target.addData(j);
     if(lyr._gj && lyr!==lyr._gj) lyr.addLayer(lyr._gj);
-    loaded[id]=true;
+    loaded[id]=true; restack();
     setCount("c-"+id,(j.features||[]).length);
     if(CURRENT && CURRENT.highlight && CURRENT.highlight.layer===id) renderHighlights(CURRENT);
   }catch(e){
@@ -1269,7 +1276,8 @@ function setLayer(id,on){
     map.addLayer(lyr);
     if(LAYERS[id].kind==="inat"){ if(inatTiles) map.addLayer(inatTiles); loadINat(); }
     else if(LAYERS[id].kind==="projects") loadProjects();
-    else fetchLayer(id);
+    else { fetchLayer(id); }
+    setTimeout(restack,0);
   } else {
     map.removeLayer(lyr);
     if(LAYERS[id].kind==="inat" && inatTiles) map.removeLayer(inatTiles);
@@ -1481,9 +1489,9 @@ async function loadParish(){
     (function walk(c,d){ if(d===0){ rings.push(c); return; } c.forEach(x=>walk(x,d-1)); })(
       parishFeature.geometry.coordinates, parishFeature.geometry.type==="Polygon" ? 1 : 2);
     const outline={type:"Feature",properties:{},geometry:{type:"MultiLineString",coordinates:rings}};
-    L.geoJSON(outline,{pane:"linePane",interactive:false,
+    L.geoJSON(outline,{renderer:VEC,interactive:false,
       style:{color:"#ffffff",weight:6,opacity:.85}}).addTo(parishGroup);
-    L.geoJSON(outline,{pane:"linePane",style:{color:"#8E4A77",weight:3,opacity:1,dashArray:"9 6"}})
+    L.geoJSON(outline,{renderer:VEC,style:{color:"#8E4A77",weight:3,opacity:1,dashArray:"9 6"}})
       .bindTooltip("Shipham civil parish (Shipham, Rowberrow &amp; Star)").addTo(parishGroup);
     let W=180,S=90,E=-180,N=-90;
     (function walk(c){ if(typeof c[0]==="number"){ W=Math.min(W,c[0]);E=Math.max(E,c[0]);S=Math.min(S,c[1]);N=Math.max(N,c[1]); }
