@@ -232,18 +232,31 @@
     .mapswitch__lbl{display:none}
     .brand{display:none!important}
     .leaflet-control-zoom{display:none}
-    /* The chooser and the layer list sit flush against the top edge, meeting in the
-       middle so they read as one header strip. */
-    .mapswitch{top:0;left:0;padding:7px 10px;border-width:0 1px 1px 0;
-      border-radius:0 0 13px 0;box-shadow:0 2px 12px rgba(30,42,35,.14)}
-    .panel{top:0;right:0;left:auto;bottom:auto;width:auto;max-width:44vw;
-      border-width:0 0 1px 1px;border-radius:0 0 0 13px;
+    /* One continuous bar across the top. The chooser sits in it on the left and the
+       layer control on the right; the list drops down below the bar. */
+    .mapswitch{top:0;left:0;right:0;max-width:none;border-radius:0;
+      border-width:0 0 1px 0;padding:0 10px;height:48px;
       box-shadow:0 2px 12px rgba(30,42,35,.14)}
-    .panel__head{padding:9px 11px}
+    .mapswitch__sel{flex:1 1 auto;max-width:calc(100vw - 190px)}
+    .panel{top:0;right:0;left:auto;bottom:auto;width:auto;max-width:none;
+      background:transparent;border:0;box-shadow:none;backdrop-filter:none;z-index:1300}
+    .panel__head{height:48px;padding:0 12px;box-sizing:border-box}
     .panel__head h2{font-size:.8rem}
-    .panel.collapsed{max-width:44vw}
-    .panel:not(.collapsed){max-width:min(92vw,330px)}
-    .panel__body{max-height:62vh}
+    .panel__body{position:absolute;top:100%;right:0;width:min(94vw,336px);
+      background:rgba(251,250,246,.985);backdrop-filter:blur(6px);
+      border:1px solid var(--line);border-top:0;border-radius:0 0 0 13px;
+      box-shadow:0 10px 24px rgba(30,42,35,.22);max-height:66vh}
+    /* Compact the open list so it covers as little of the map as possible */
+    .panel__body{padding:4px 7px 8px}
+    .panel__body .layer{padding:4px 6px;gap:8px;border-radius:8px}
+    .panel__body .layer input{width:15px;height:15px;margin-top:2px}
+    .panel__body .layer__txt b{font-size:.78rem;line-height:1.1}
+    .panel__body .layer__txt small{font-size:.63rem;margin-top:0;
+      white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .panel__body .lyrgroup{margin:7px 0 1px 6px;font-size:.6rem}
+    .basemap{margin:7px 6px 2px;padding-top:7px}
+    .basemap button{padding:5px 3px;font-size:.66rem;min-width:62px}
+    #adminBtn{padding:6px!important;font-size:.68rem!important}
   }
 
   /* ================= Group chrome on the map ================= */
