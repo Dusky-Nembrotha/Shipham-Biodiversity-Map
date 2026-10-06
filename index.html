@@ -1061,18 +1061,22 @@ function prettyVal(k,v){
 const KEYNAME={AreaHa:"Area (ha)",area_ha:"Area (ha)",AREA:"Area (ha)",SAC_AREA:"Area (ha)",
   MainHabs:"Habitat",THEMNAME:"Type",Prihabtxt:"Habitat",CL_NUMBER:"Common land no.",
   MAPSTATUS:"Status",AUTHORITY:"Authority",DATESIGNED:"Registered",OC:"Open country",
-  RCL:"Registered common",S16:"Dedicated land",
+  RCL:"Registered common",S16:"Dedicated land",man_made:"Structure",tourism:"Visitor",
+  leisure:"Facility",religion:"Religion",denomination:"Denomination",sport:"Sport",
+  species:"Species",operator:"Run by",access:"Access",ele:"Height (m)",start_date:"Dated",
   PrimSource:"Source",ROW_TYPE:"Path",SchedDate:"Scheduled",ListDate:"Listed",Grade:"Grade",
-  CONTACT_NO:"Contact",STATUS:"Status",natural:"Feature",amenity:"Type",leisure:"Type",
-  historic:"Type",man_made:"Type",tourism:"Type",shop:"Shop",waterway:"Watercourse",place:"Place"};
+  CONTACT_NO:"Contact",STATUS:"Status",natural:"Feature",amenity:"Type",historic:"Historic",shop:"Shop",highway:"Transport",
+  waterway:"Watercourse",place:"Place"};
 const prettyKey = k => KEYNAME[k] || k.replace(/_/g," ").replace(/\b\w/g,c=>c.toUpperCase())
                         .replace(/\bUrl\b/i,"Link").replace(/\bHab\b/i,"Habitat");
-const TAGKEYS=["natural","historic","amenity","leisure","man_made","tourism","shop","waterway","place"];
+const TAGKEYS=["natural","historic","amenity","highway","leisure","man_made","tourism","shop","waterway","place"];
+const prettyTag = v => String(v).trim().replace(/_/g," ").replace(/^./,c=>c.toUpperCase());
+const isTag = v => /^[a-z][a-z0-9_]*$/.test(String(v).trim());
 function titleOf(def,p){
-  for(const k of (def.n||[])) if(p[k] && String(p[k]).trim()) return tidyName(p[k]);
+  for(const k of (def.n||[])) if(p[k] && String(p[k]).trim())
+    return isTag(p[k]) ? prettyTag(p[k]) : tidyName(p[k]);
   for(const k of ["name","Name","NAME"]) if(p[k] && String(p[k]).trim()) return tidyName(p[k]);
-  for(const k of TAGKEYS) if(p[k])             // "cave_entrance" -> "Cave entrance"
-    return String(p[k]).replace(/_/g," ").replace(/^./,c=>c.toUpperCase());
+  for(const k of TAGKEYS) if(p[k]) return prettyTag(p[k]);   // "cave_entrance" -> "Cave entrance"
   return def.t;
 }
 function featurePopup(def,p){
@@ -1091,14 +1095,25 @@ function featurePopup(def,p){
   return `<div class="pop"><span class="tag" style="background:${def.c}1a;color:${def.c}">${esc(def.t)}</span>
     <h3>${esc(title)}</h3><div style="font-size:.78rem;line-height:1.45">${rows}</div>${link}</div>`;
 }
+const isPoint = f => !!(f && f.geometry && /Point$/.test(f.geometry.type));
 function styleFor(def){
-  if(def.kind==="line")  return f=>({pane:"linePane",color:def.c,weight:3,opacity:.95,dashArray:def.dash||null,fill:false});
-  if(def.kind==="wash")  return f=>{ const p=f.properties||{};
-    const col = def.fillProp&&p[def.fillProp] ? p[def.fillProp]
-              : (def.colorBy ? habColor(def.colorBy.map(k=>p[k]).find(Boolean)) : def.c);
-    return {pane:"fillPane",stroke:false,fillColor:col,fillOpacity:.55}; };
-  return f=>({pane:"areaPane",color:def.c,weight:2,fillColor:def.c,fillOpacity:def.faint?.07:.18});
+  return f=>{
+    // Points keep the pane and size pointToLayer gave them; only their colour is ours.
+    if(isPoint(f)) return {pane:"linePane",color:"#fff",weight:1.6,fillColor:def.c,fillOpacity:1};
+    if(def.kind==="line") return {pane:"linePane",color:def.c,weight:3,opacity:.95,dashArray:def.dash||null,fill:false};
+    if(def.kind==="wash"){ const p=f.properties||{};
+      const col = def.fillProp&&p[def.fillProp] ? p[def.fillProp]
+                : (def.colorBy ? habColor(def.colorBy.map(k=>p[k]).find(Boolean)) : def.c);
+      return {pane:"fillPane",stroke:false,fillColor:col,fillOpacity:.55}; }
+    return {pane:"areaPane",color:def.c,weight:2,fillColor:def.c,fillOpacity:def.faint?.07:.18};
+  };
 }
+/* One canvas per pane, with a tap tolerance — a 4px dot is otherwise almost
+   impossible to hit with a finger. */
+const paneOf = d => d.kind==="wash" ? "fillPane" : (d.kind==="area" ? "areaPane" : "linePane");
+const RENDERERS={};
+const rendererFor = pane => RENDERERS[pane] ||
+  (RENDERERS[pane]=L.canvas({pane:pane, tolerance: pane==="linePane" ? 10 : 4}));
 /* Attribution is a licence condition for several of these sources — OpenStreetMap's
    ODbL in particular requires it — so each layer carries its own credit. */
 const ATTRIB={
@@ -1131,11 +1146,12 @@ function layerOf(id){
     return built[id]=L.tileLayer.wms(d.url,o);
   }
   const gj=L.geoJSON(null,{
-    pane: d.kind==="wash" ? "fillPane" : (d.kind==="area" ? "areaPane" : "linePane"),
+    pane: paneOf(d),
+    renderer: rendererFor(paneOf(d)),
     attribution: attribFor(id,d),
     style: styleFor(d),
-    pointToLayer:(f,ll)=>L.circleMarker(ll,{pane:"linePane",radius:d.small?4:6,color:"#fff",weight:1.6,
-                          fillColor:d.c,fillOpacity:1}),
+    pointToLayer:(f,ll)=>L.circleMarker(ll,{pane:"linePane",renderer:rendererFor("linePane"),
+                          radius:d.small?5:7,color:"#fff",weight:1.6,fillColor:d.c,fillOpacity:1}),
     onEachFeature:(f,l)=>{
       const p=f.properties||{};
       if(d.designation) bindDesignation(f,l,d.designation,d.c);
