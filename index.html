@@ -207,8 +207,6 @@
   }
   /* Licence conditions mean every credit has to stay readable, so this is made small
      and quiet rather than truncated. */
-  .roads-overlay{mix-blend-mode:multiply;
-    filter:grayscale(1) brightness(1.22) contrast(2.3)}
   .basemap .row.extra{margin-top:6px}
   .basemap .row.extra button.on{background:var(--slate);border-color:var(--slate);color:#fff}
   .leaflet-control-attribution{font-size:9.5px!important;line-height:1.35;
@@ -300,8 +298,12 @@
   .sidebox{margin-top:10px;border-top:1px solid var(--line);padding-top:9px}
   .sidebox h3{font-family:"Inter",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;font-size:.72rem;font-weight:700;line-height:1.3;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:0 0 6px}
   .sidelist{display:grid;gap:4px;max-height:210px;overflow:auto}
-  .sidelist button{display:block;width:100%;text-align:left;border:1px solid var(--line);background:#fff;
-    border-radius:8px;padding:6px 8px;font:inherit;font-size:.76rem;cursor:pointer;color:inherit;line-height:1.25}
+  .sidelist button{display:flex;gap:8px;align-items:center;width:100%;text-align:left;
+    border:1px solid var(--line);background:#fff;border-radius:8px;padding:5px 8px;font:inherit;
+    font-size:.76rem;cursor:pointer;color:inherit;line-height:1.25}
+  .sidelist img{width:38px;height:38px;flex:none;object-fit:cover;border-radius:6px;
+    background:var(--stone);border:1px solid var(--line)}
+  .sidelist .txt{min-width:0;flex:1}
   .sidelist button:hover{border-color:var(--moss);background:#F7FAF6}
   .sidelist .m{display:block;font-size:.65rem;color:var(--muted);margin-top:1px}
 </style>
@@ -468,11 +470,6 @@ const nlsLayer = L.tileLayer("https://mapseries-tilesets.s3.amazonaws.com/25_inc
 const plainLayer = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",
   { maxZoom:19, attribution:'&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors' });
 
-/* OpenStreetMap blended with multiply: the dark roads, buildings and names show
-   through while the pale background disappears. Useful over LiDAR and imagery. */
-const roadsLayer = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",
-  { maxZoom:19, opacity:1, className:"roads-overlay", pane:"wmsPane",
-    attribution:'Roads &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors' });
 /* The tithe survey is served by the Somerset HER in British National Grid, so it can
    only be built once proj4 has loaded. */
 let _tithe=null;
@@ -624,6 +621,7 @@ function inatFallback(){
 const inatShowcase=[]; let showcaseDone=false;
 function renderShowcase(){
   const box=document.getElementById("showcase"); if(!box) return;
+  if(!CURRENT || CURRENT.key!=="biodiversity"){ box.hidden=true; return; }   // not this map's content
   if(!inatShowcase.length){ box.hidden=true; return; }
   const pool=inatShowcase.slice();
   for(let i=pool.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [pool[i],pool[j]]=[pool[j],pool[i]]; }
@@ -957,6 +955,9 @@ const LAYERS = {
   /* --- designations & habitats --- */
   sssi:        {f:"sssi",        t:"Protected wildlife sites", label:true, s:"SSSIs · Natural England", c:"#D81B83", kind:"area", n:["SSSI_NAME","NAME"], designation:"SSSI"},
   nnr:         {f:"nnr",         t:"National nature reserve", label:true,  s:"Natural England",          c:"#00695C", kind:"area", n:["NAME"], designation:"National nature reserve"},
+  "roads-buildings": {f:"roads-buildings", t:"Roads & buildings", s:"OS Open Roads \u00b7 OpenStreetMap buildings",
+                c:"#4E5A52", kind:"roads", n:["name"], heavy:true,
+                attribution:'Roads &copy; Crown copyright, OS Open Roads (OGL) \u00b7 buildings &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors'},
   trees:       {f:"trees",       t:"Trees & woodland",  s:"ancient woodland, woods and tree groups", c:"#2E7D32", kind:"wash", colorBy:["treeType"], n:["detail"], heavy:true},
   "priority-habitats": {f:"priority-habitats", t:"Priority habitats", s:"Habitat inventory · Natural England", c:"#43A047", kind:"wash", colorBy:["MainHabs"], n:["MainHabs"]},
   lnrs:        {f:"lnrs",        t:"Nature recovery (LNRS)",   s:"Somerset habitat priority areas", c:"#4E8E63", kind:"wash", fillProp:"fill", n:["cat"],
@@ -986,7 +987,8 @@ const LAYERS = {
                       url:"https://environment.data.gov.uk/spatialdata/nafra2-risk-of-flooding-from-surface-water/wms",
                       wms:"rofsw", opacity:.75, attribution:"&copy; Environment Agency",
                       bounds:[[51.27,-2.87],[51.36,-2.72]]},
-  "osm-caves":     {f:"osm-caves",     t:"Caves & swallets", label:true,   s:"Mendip karst · OSM",      c:"#37474F", kind:"point", n:["name"]},
+  "osm-caves":     {f:"osm-caves",     t:"Caves & swallets", label:true,   s:"Mendip karst · OSM",      c:"#37474F", kind:"point", n:["name"],
+                   site:{url:"https://www.mcra.org.uk/registry/registrysearch.php",label:"Look it up in the Mendip Cave Registry"}},
 
   /* --- water & vegetation --- */
   "osm-water":     {f:"osm-water",     t:"Rivers, streams & ponds", s:"OpenStreetMap",      c:"#1E88E5", kind:"line", n:["name","waterway","natural"]},
@@ -1180,7 +1182,8 @@ function featurePopup(def,p){
     rows+=`<div style="margin-top:3px"><b style="color:var(--muted);font-weight:600">${esc(prettyKey(k))}:</b> ${linkify(pv)}</div>`;
     n++;
   }
-  const link = def.link && p[def.link] ? `<div style="margin-top:7px"><a href="${esc(p[def.link])}" target="_blank" rel="noopener">More detail →</a></div>` : "";
+  let link = def.link && p[def.link] ? `<div style="margin-top:7px"><a href="${esc(p[def.link])}" target="_blank" rel="noopener">More detail →</a></div>` : "";
+  if(!link && def.site) link = `<div style="margin-top:7px"><a href="${esc(def.site.url)}" target="_blank" rel="noopener">${esc(def.site.label)} →</a></div>`;
   // a photograph where one exists, with the credit its licence requires
   const photo = p.img ? `<img class="pop-img" src="${esc(p.img)}" alt="${esc(title)}" loading="lazy"
       onerror="this.parentNode.removeChild(this)">`
@@ -1195,6 +1198,9 @@ function styleFor(def){
   return f=>{
     // Points keep the size pointToLayer gave them; only their colour is ours.
     if(isPoint(f)) return {color:"#fff",weight:1.6,fillColor:def.c,fillOpacity:1};
+    if(def.kind==="roads") return /Line/.test(f.geometry&&f.geometry.type)
+      ? {color:"#3f4a43",weight:1.7,opacity:.95,fill:false}
+      : {color:"#5c6660",weight:.7,opacity:.9,fillColor:"#78837c",fillOpacity:.75};
     if(def.kind==="line") return {color:def.c,weight:3,opacity:.95,dashArray:def.dash||null,fill:false};
     if(def.kind==="wash"){ const p=f.properties||{};
       const col = def.fillProp&&p[def.fillProp] ? p[def.fillProp]
@@ -1386,10 +1392,12 @@ function renderPanel(g){
   $("panelBody").querySelectorAll("[data-base]").forEach(b=>
     b.addEventListener("click",()=>setBase(b.dataset.base)));
   const rb=$("roadsBtn");
-  if(rb){ rb.classList.toggle("on",map.hasLayer(roadsLayer));
+  if(rb){
+    const isOn=()=>!!(built["roads-buildings"] && map.hasLayer(built["roads-buildings"]));
+    rb.classList.toggle("on",isOn());
     rb.addEventListener("click",()=>{
-      if(map.hasLayer(roadsLayer)) map.removeLayer(roadsLayer); else roadsLayer.addTo(map);
-      rb.classList.toggle("on",map.hasLayer(roadsLayer));
+      setLayer("roads-buildings", !isOn());
+      setTimeout(()=>rb.classList.toggle("on",isOn()),60);
     }); }
   wireAdmin();
 }
@@ -1455,7 +1463,7 @@ function renderHighlights(g){
     try{ pt = l.getLatLng ? l.getLatLng() : (l.getBounds && l.getBounds().isValid() ? l.getBounds().getCenter() : null); }catch(e){}
     const ins = pt ? pointInParish(pt.lng,pt.lat) : false;
     const km  = pt ? kmFromCentre(pt.lng,pt.lat) : 1e9;
-    items.push({t,sub,l,ins,km});
+    items.push({t,sub,l,ins,km,img:p.img||null});
   });
   if(!items.length){ box.hidden=true; return; }
   items.sort((a,b)=> (b.ins-a.ins) || (a.km-b.km) || a.t.localeCompare(b.t));
@@ -1469,7 +1477,8 @@ function renderHighlights(g){
     const b=document.createElement("button");
     const note = it.sub ? prettyKey(String(it.sub))
                : (it.ins ? "" : (it.km<30 ? it.km.toFixed(it.km<10?1:0)+" km away" : ""));
-    b.innerHTML=esc(it.t)+(note?`<span class="m">${esc(note)}</span>`:"");
+    const thumb = it.img ? `<img src="${esc(it.img)}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">` : "";
+    b.innerHTML=thumb+`<span class="txt">${esc(it.t)}${note?`<span class="m">${esc(note)}</span>`:""}</span>`;
     b.addEventListener("click",()=>{
       try{ const t=it.l.getBounds?it.l.getBounds():null;
         if(t&&t.isValid()) map.fitBounds(t,{padding:[70,70],maxZoom:17});
