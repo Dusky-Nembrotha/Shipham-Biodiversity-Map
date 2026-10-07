@@ -287,6 +287,14 @@
   .stats span{font-size:.66rem;font-weight:600;color:var(--moss);background:var(--stone);
     border-radius:999px;padding:3px 8px;white-space:nowrap}
   .stats b{font-variant-numeric:tabular-nums}
+  .legbtn{margin-left:auto;flex:none;border:0;background:transparent;color:var(--muted);
+    font-size:.72rem;cursor:pointer;padding:2px 4px;line-height:1}
+  .legbtn:hover{color:var(--ink)}
+  .legend{margin:0 8px 6px 34px;display:grid;gap:3px}
+  .legend div{display:flex;gap:6px;align-items:flex-start;font-size:.68rem;color:var(--muted);line-height:1.25}
+  .legend i{width:11px;height:11px;border-radius:3px;flex:none;margin-top:2px;border:1px solid rgba(0,0,0,.15)}
+  .legend img{max-width:100%;border-radius:5px;background:#fff}
+  .legend .none{font-style:italic}
   .grpTag{display:inline-block;font-size:.63rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;
     color:#fff;background:var(--g,#2F5D3A);padding:3px 8px;border-radius:999px;margin-bottom:7px}
   .layer__txt small .count{color:var(--muted)}
@@ -438,6 +446,7 @@ window.__map = map;   // for ?debug=1 measurements
    keyboard opening. Leaflet watches window resize itself but not visualViewport. */
 const refitMap = () => map.invalidateSize({pan:false});
 addEventListener("orientationchange", ()=>setTimeout(refitMap,200));
+map.on("moveend", ()=>{ if(typeof refreshLegends==="function") refreshLegends(); });
 if(window.visualViewport) visualViewport.addEventListener("resize", refitMap);
 
 /* Background panes, below the default overlayPane (400) used by points and lines. */
@@ -630,12 +639,25 @@ function renderShowcase(){
   if(!inatShowcase.length){ box.hidden=true; return; }
   const pool=inatShowcase.slice();
   for(let i=pool.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [pool[i],pool[j]]=[pool[j],pool[i]]; }
-  const pick=pool.slice(0,4);
+  const pick=pool.slice(0,4), reserve=pool.slice(4);
   box.innerHTML='<div class="sc-head">Recent sightings nearby</div>'+pick.map(o=>
     `<a href="${esc(o.uri)}" target="_blank" rel="noopener" title="${esc(o.common)} — by ${esc(o.recorder)}">`
-    +`<img src="${esc(o.thumb)}" alt="" loading="lazy" onerror="this.parentNode.style.display='none'">`
+    +`<img src="${esc(o.thumb)}" alt="" loading="lazy" referrerpolicy="no-referrer">`
     +`<div class="sc-txt"><span class="sc-sp">${esc(o.common)}</span><span class="sc-by">by ${esc(o.recorder)}</span></div></a>`
   ).join("");
+  /* A photo that will not load leaves a hole, so put another sighting in its place
+     rather than removing the tile. */
+  box.querySelectorAll("a").forEach(a=>{
+    const img=a.querySelector("img"); if(!img) return;
+    img.addEventListener("error",function swap(){
+      const next=reserve.shift();
+      if(!next){ a.style.display="none"; return; }
+      a.href=next.uri; a.title=next.common+" — by "+next.recorder;
+      a.querySelector(".sc-sp").textContent=next.common;
+      a.querySelector(".sc-by").textContent="by "+next.recorder;
+      img.src=next.thumb;                       // the same handler catches a second failure
+    });
+  });
   box.hidden = !(CURRENT && CURRENT.key==="biodiversity");
 }
 function addINatObs(o){
@@ -1059,7 +1081,7 @@ const GROUPS = [
       ["Habitats", ["priority-habitats","lnrs"]],
       ["Trees & water", ["trees","osm-trees","flood"]]
     ],
-    on:["inat","projects","sssi","nnr","osm-trees","flood"],
+    on:["inat","projects","sssi","nnr","trees","osm-trees","flood"],
     highlight:{layer:"sssi", title:"Protected sites nearby", name:["SSSI_NAME","NAME"]} },
 
   { key:"landscape", title:"Landscape & Heritage", colour:"#6A1B9A", bg:"#F0E8F5",
@@ -1376,6 +1398,39 @@ function setLayer(id,on){
 ================================================================= */
 let CURRENT=null;
 const $=id=>document.getElementById(id);
+const hasLegend = d => !!(d.colorBy || d.fillProp || (d.kind==="wms" && d.wms));
+/* For vector layers the key lists only what is actually on screen, recomputed as you
+   pan. A WMS can only hand over its whole key — the service cannot be asked what is
+   visible in one view — so that one is labelled as the full key. */
+function buildLegend(id){
+  const d=LAYERS[id], box=document.getElementById("leg-"+id);
+  if(!box || box.hidden) return;
+  if(d.kind==="wms"){
+    const u=d.url+(d.url.indexOf("?")>-1?"&":"?")+new URLSearchParams({
+      SERVICE:"WMS",VERSION:"1.1.1",REQUEST:"GetLegendGraphic",FORMAT:"image/png",
+      LAYER:d.wms,TRANSPARENT:"true"}).toString();
+    box.innerHTML=`<div class="none">Full key for this layer</div><img src="${esc(u)}" alt="Key for ${esc(d.t)}" loading="lazy" onerror="this.remove()">`;
+    return;
+  }
+  const lyr=built[id]; if(!lyr){ box.innerHTML=""; return; }
+  const gj=lyr._gj||lyr, b=map.getBounds(), found=new Map();
+  try{
+    gj.eachLayer(l=>{
+      let hit=false;
+      try{ hit = l.getLatLng ? b.contains(l.getLatLng()) : b.intersects(l.getBounds()); }catch(e){}
+      if(!hit) return;
+      const p=(l.feature&&l.feature.properties)||{};
+      const label=(d.colorBy||[]).map(k=>p[k]).find(Boolean) || p.cat || d.t;
+      const col = d.fillProp&&p[d.fillProp] ? p[d.fillProp] : habColor(label);
+      if(!found.has(label)) found.set(label,col);
+    });
+  }catch(e){}
+  if(!found.size){ box.innerHTML='<div class="none">Nothing from this layer in view</div>'; return; }
+  box.innerHTML=[...found.entries()].sort((a,b2)=>String(a[0]).localeCompare(String(b2[0])))
+    .map(([k,c])=>`<div><i style="background:${esc(c)}"></i><span>${esc(prettyVal("",k))}</span></div>`).join("");
+}
+function refreshLegends(){ document.querySelectorAll(".legend").forEach(el=>{
+  if(!el.hidden) buildLegend(el.id.slice(4)); }); }
 function renderPanel(g){
   let h="";
   for(const [heading,ids] of g.sections){
@@ -1388,7 +1443,10 @@ function renderPanel(g){
         ? `<span class="swatch" style="background:transparent;height:0;border:0;border-top:3px dashed ${d.c};width:15px;margin-top:8px;border-radius:0"></span>`
         : `<span class="swatch" style="background:${d.c}"></span>`;
       h+=`<label class="layer"><input type="checkbox" data-lyr="${id}"${on?" checked":""}>
-        ${sw}<span class="layer__txt"><b>${esc(d.t)}</b><small>${esc(d.s||"")} <span class="count" id="c-${id}"></span></small></span></label>`;
+        ${sw}<span class="layer__txt"><b>${esc(d.t)}</b><small>${esc(d.s||"")} <span class="count" id="c-${id}"></span></small></span>`
+        +(hasLegend(d)?`<button type="button" class="legbtn" data-leg="${id}" title="Show the key">▾</button>`:"")
+        +`</label>`;
+      if(hasLegend(d)) h+=`<div class="legend" id="leg-${id}" hidden></div>`;
     }
   }
   h+=`<div class="basemap"><small>Base map</small><div class="row">`;
@@ -1418,6 +1476,13 @@ function renderPanel(g){
       setTimeout(()=>b.classList.toggle("on",isOn()),60);
     });
   });
+  $("panelBody").querySelectorAll("[data-leg]").forEach(b=>
+    b.addEventListener("click",e=>{
+      e.preventDefault(); e.stopPropagation();
+      const box=document.getElementById("leg-"+b.dataset.leg);
+      box.hidden=!box.hidden; b.textContent=box.hidden?"▾":"▴";
+      buildLegend(b.dataset.leg);
+    }));
   wireAdmin();
 }
 /* Counts on the card are for the parish itself, not the wider area the layers cover. */
