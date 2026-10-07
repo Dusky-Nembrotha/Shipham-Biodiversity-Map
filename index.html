@@ -269,7 +269,15 @@
   }
 
   /* ================= Group chrome on the map ================= */
-  .brand{top:60px}
+  .brand{top:74px}                      /* clear of the map picker above it */
+  .facts{list-style:none;margin:9px 0 0;padding:0;display:grid;gap:5px}
+  .facts li{position:relative;padding-left:15px;font-size:.74rem;color:var(--ink);line-height:1.35}
+  .facts li::before{content:"";position:absolute;left:3px;top:.45em;width:5px;height:5px;
+    border-radius:50%;background:var(--g,#2F5D3A)}
+  .stats{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px}
+  .stats span{font-size:.66rem;font-weight:600;color:var(--moss);background:var(--stone);
+    border-radius:999px;padding:3px 8px;white-space:nowrap}
+  .stats b{font-variant-numeric:tabular-nums}
   .grpTag{display:inline-block;font-size:.63rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;
     color:#fff;background:var(--g,#2F5D3A);padding:3px 8px;border-radius:999px;margin-bottom:7px}
   .layer__txt small .count{color:var(--muted)}
@@ -303,9 +311,11 @@
     <span class="brand__chev">▾</span>
   </div>
   <div class="brand__body">
-    <img class="brand__img" id="brandImg" src="shipham-aerial.jpg" alt="Shipham from the air" hidden
+    <img class="brand__img" id="brandImg" alt="" hidden
          onerror="this.dataset.failed='1';this.hidden=true">
     <p id="grpBlurb"></p>
+    <ul class="facts" id="grpFacts"></ul>
+    <div class="stats" id="grpStats"></div>
     <div id="showcase" class="showcase" hidden></div>
     <div id="sidebox" class="sidebox" hidden>
       <h3 id="sideboxTitle">Highlights</h3>
@@ -994,6 +1004,8 @@ const GROUPS = [
   { key:"overview", title:"Overview", colour:"#2F5D3A", bg:"#E6F0E7",
     blurb:"The parish at a glance — where you can walk, and the village itself. Use the Map buttons above for wildlife, landscape, geology and history.",
     tagline:"Paths, places and facilities",
+    img:"shipham-aerial.jpg",
+    facts:["Three settlements — Shipham, Rowberrow and Star","On the western Mendip plateau, above the Somerset Levels","Rights of way thread the whole parish — most of it is walkable"],
     icon:'<circle cx="12" cy="12" r="9"/><path d="M3.6 9h16.8M3.6 15h16.8M12 3a16 16 0 000 18 16 16 0 000-18"/>',
     base:"os",
     sections:[
@@ -1001,12 +1013,14 @@ const GROUPS = [
       ["The village", ["osm-community-buildings","osm-shops-pubs","osm-recreation"]],
       ["Rivers & streams", ["osm-water"]]
     ],
-    on:["prow","osm-community-buildings"],
+    on:["prow","osm-viewpoints","osm-community-buildings","osm-shops-pubs","osm-recreation","osm-water"],
     highlight:{layer:"osm-community-buildings", title:"Around the village", name:["name"], sub:["amenity"], parishOnly:true} },
 
   { key:"biodiversity", title:"Biodiversity", colour:"#2F5D3A", bg:"#E6F0E7",
     blurb:"Wildlife sites, habitats and what people are seeing right now.",
     tagline:"Sightings · habitats · nature sites",
+    img:"shipham-biodiversity.jpg",
+    facts:["Limestone grassland, ancient woodland and old orchards","Sightings arrive live from iNaturalist — add your own by recording there","The protected sites are on the ridge around the parish rather than in it"],
     icon:'<path d="M12 21c0-7 4-11 9-12 0 7-4 11-9 12zM12 21c0-5-3-8-7-9 0 5 3 8 7 9z"/>',
     base:"satos", add:true,
     sections:[
@@ -1015,12 +1029,14 @@ const GROUPS = [
       ["Habitats", ["priority-habitats","ancient-woodland","orchards","wood-pasture","lnrs"]],
       ["Trees & water", ["osm-trees","osm-woodland-scrub","osm-water","tree-groups","woodland-nfi"]]
     ],
-    on:["inat","projects","sssi","lnr"],
+    on:["inat","projects","sssi","lnr","nnr","sac","nature-projects","priority-habitats","ancient-woodland","orchards","wood-pasture","lnrs","osm-trees","osm-woodland-scrub","osm-water"],
     highlight:{layer:"sssi", title:"Protected sites nearby", name:["SSSI_NAME","NAME"]} },
 
   { key:"landscape", title:"Landscape & Heritage", colour:"#6A1B9A", bg:"#F0E8F5",
     blurb:"The Mendip skyline, protected landscapes, listed buildings and where you can walk.",
     tagline:"National Landscape · listed buildings · access",
+    img:"shipham-landscape.jpg",
+    facts:["The whole parish lies inside the Mendip Hills National Landscape","Thirteen listed buildings stand in the parish, St Leonard's among them","Open access land and common land run along the ridge"],
     icon:'<path d="M3 18l5-7 4 5 3-4 6 6zM7 7h.01"/><circle cx="7" cy="7" r="1.6"/>',
     base:"os",
     sections:[
@@ -1030,12 +1046,14 @@ const GROUPS = [
       ["Views & landform", ["osm-viewpoints","osm-cliffs-rock","osm-woodland-scrub"]],
       ["Historic character", ["her-hlc"]]
     ],
-    on:["national-landscape","prow","listed-buildings"],
+    on:["national-landscape","conservation-areas","listed-buildings","listed-building-areas","scheduled-monuments","prow","open-access","common-land","osm-viewpoints","osm-cliffs-rock"],
     highlight:{layer:"listed-buildings", title:"Listed buildings", name:["Name"], sub:["Grade"], subPrefix:"Grade ", parishOnly:true} },
 
   { key:"geology", title:"Geology", colour:"#8D6E63", bg:"#F2EBE6",
     blurb:"Carboniferous limestone, the caves and swallets of the Mendips, and the ground beneath the parish.",
     tagline:"Bedrock · caves · karst",
+    img:"shipham-geology.jpg",
+    facts:["Carboniferous limestone — the rock that makes the Mendip caves","Nearly fifty cave entrances and swallets mapped round about","Calamine, an ore of zinc, was mined here from the seventeenth century"],
     icon:'<path d="M4 20l5-9 4 4 3-6 4 11z"/><path d="M3 20h18"/>',
     base:"lidar",
     sections:[
@@ -1044,12 +1062,14 @@ const GROUPS = [
       ["Mining & water", ["osm-mining","flood","osm-water"]],
       ["Geological designations", ["sssi"]]
     ],
-    on:["bgs-bedrock","osm-caves"],
+    on:["bgs-bedrock","osm-caves","osm-cliffs-rock","osm-springs","osm-mining","osm-water","sssi"],
     highlight:{layer:"osm-caves", title:"Caves & swallets", name:["name"]} },
 
   { key:"history", title:"History", colour:"#795548", bg:"#F0E9E4",
     blurb:"Opens on the 1880s Ordnance Survey. Monuments, old workings and the shape of the village before the motor car.",
     tagline:"1880s maps · monuments · old workings",
+    img:"shipham-history.jpg",
+    facts:["Drawn over the 25-inch Ordnance Survey of the 1880s","Switch on the tithe map of the 1840s or RAF photographs of 1946","Dolebury Hill Fort crowns the ridge above the village"],
     icon:'<path d="M5 21V8l7-4 7 4v13"/><path d="M9 21v-6h6v6"/>',
     base:"nls",
     sections:[
@@ -1059,12 +1079,14 @@ const GROUPS = [
       ["Industry", ["osm-mining"]],
       ["Old routes", ["prow"]]
     ],
-    on:["scheduled-monuments","osm-historic-features"],
+    on:["her-monuments","her-tithebounds","scheduled-monuments","osm-historic-features","listed-buildings","conservation-areas","osm-settlements","osm-mining","prow"],
     highlight:{layer:"osm-historic-features", title:"Historic features", name:["name","historic"]} },
 
   { key:"parish", title:"Parish Assets", colour:"#1565C0", bg:"#E3EDF8",
     blurb:"The everyday village: halls, shops, playing fields, benches, footpaths — and projects people have added.",
     tagline:"Facilities · footpaths · community projects",
+    img:"shipham-parish.jpg",
+    facts:["Village hall, church, first school, shop and pubs","Benches, post boxes and bus stops, as mapped by volunteers","Footpaths and bridleways linking Shipham, Rowberrow and Star"],
     icon:'<path d="M3 21h18M6 21V9l6-5 6 5v12"/><path d="M10 21v-5h4v5"/>',
     base:"os",
     sections:[
@@ -1073,7 +1095,7 @@ const GROUPS = [
       ["Getting about", ["prow","osm-viewpoints"]],
       ["Risk & water", ["flood","osm-water"]]
     ],
-    on:["osm-community-buildings","osm-shops-pubs","osm-recreation"],
+    on:["osm-community-buildings","osm-shops-pubs","osm-recreation","osm-street-furniture","prow","osm-viewpoints","osm-water"],
     highlight:{layer:"osm-community-buildings", title:"Community buildings", name:["name"], sub:["amenity"]} }
 ];
 
@@ -1251,7 +1273,7 @@ async function fetchLayer(id){
     const lyr=layerOf(id); const target=lyr._gj||lyr;
     target.addData(j);
     if(lyr._gj && lyr!==lyr._gj) lyr.addLayer(lyr._gj);
-    loaded[id]=true; restack();
+    loaded[id]=true; restack(); updateStats();
     setCount("c-"+id,(j.features||[]).length);
     if(CURRENT && CURRENT.highlight && CURRENT.highlight.layer===id) renderHighlights(CURRENT);
   }catch(e){
@@ -1317,6 +1339,21 @@ function renderPanel(g){
     b.addEventListener("click",()=>setBase(b.dataset.base)));
   wireAdmin();
 }
+/* A few live numbers from the layers this map has actually loaded. */
+function updateStats(){
+  const box=$("grpStats"); if(!box) return;
+  if(!CURRENT){ box.innerHTML=""; return; }
+  const ids=[].concat.apply([],CURRENT.sections.map(x=>x[1]));
+  const bits=[];
+  ids.forEach(id=>{
+    const d=LAYERS[id]; if(!d||!loaded[id]) return;
+    const l=built[id]; if(!l) return;
+    let n=0; const gj=l._gj||l;
+    try{ gj.eachLayer(()=>n++); }catch(e){}
+    if(n) bits.push(`<span><b>${n.toLocaleString("en-GB")}</b> ${esc((d.t||"").toLowerCase())}</span>`);
+  });
+  box.innerHTML=bits.slice(0,6).join("");
+}
 function renderHighlights(g){
   const hi=g.highlight, box=$("sidebox"), list=$("sidelist");
   if(!hi || !loaded[hi.layer]){ box.hidden=true; return; }
@@ -1377,10 +1414,16 @@ function openGroup(key){
   setBase(g.base);
   map.addLayer(parishGroup);
   g.on.forEach(id=>{ if(LAYERS[id]) setLayer(id,true); });
+  renderHighlights(g);        // layers already cached from an earlier visit render nothing otherwise
   $("showcase").hidden = g.key!=="biodiversity";
   $("addBtn").hidden = !g.add;
   $("brand").hidden=false; $("panel").hidden=false;
-  $("brandImg").hidden = g.key!=="overview" || $("brandImg").dataset.failed==="1";
+  const im=$("brandImg");
+  if(g.img){ if(im.getAttribute("src")!==g.img){ delete im.dataset.failed; im.src=g.img; }
+             im.alt=g.title+" — Shipham parish"; im.hidden = im.dataset.failed==="1"; }
+  else im.hidden=true;
+  $("grpFacts").innerHTML = (g.facts||[]).map(f=>`<li>${esc(f)}</li>`).join("");
+  updateStats();
   markSwitcher(g.key);
   if(location.hash.slice(1)!==key) history.replaceState(null,"","#"+key);
   setTimeout(()=>{ refitMap(); if(parishFeature) fitParish(); },60);

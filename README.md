@@ -155,12 +155,20 @@ billing-side: with no payment card on the OS account, exceeding the monthly free
 premium allowance pauses premium access until the next month rather than running
 up a bill.
 
-### The front page photograph
+### Photographs
 
-The landing page looks for **`shipham-aerial.jpg`** in the repository root. Drop a
-photograph in with that name and it becomes the backdrop; if the file is absent
-the page falls back to a plain gradient, so nothing breaks either way.
+Each map's info card looks for a photograph in the repository root. Drop a file in
+with the matching name and it appears at the top of the card; if it is absent the
+card simply omits it, so nothing breaks either way.
 
-It is the first thing anyone downloads, so resize before committing: about
-**2400 px wide, JPEG quality ~82, under 600 KB**. A landscape crop works best —
-the image is anchored slightly above centre so the horizon sits above the panel.
+| Map | File |
+|---|---|
+| Overview | `shipham-aerial.jpg` |
+| Biodiversity | `shipham-biodiversity.jpg` |
+| Landscape & Heritage | `shipham-landscape.jpg` |
+| Geology | `shipham-geology.jpg` |
+| History | `shipham-history.jpg` |
+| Parish Assets | `shipham-parish.jpg` |
+
+Resize before committing — these load with the map, so about **1200 px wide,
+JPEG quality ~82, under 250 KB** each. A landscape crop works best.
