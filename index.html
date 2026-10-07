@@ -1581,12 +1581,12 @@ map.on("click", async e=>{
       if(t && t.length>1) parts.push(`<b style="color:${d.c}">${esc(d.t)}</b><div>${esc(t).slice(0,600)}</div>`);
     }catch(_){
       // blocked cross-origin - show the service's own reply in a frame
-      // cross-origin, so the service's own reply has to be framed rather than restyled
+      // The HER sends no CORS header, so its reply cannot be read and restyled here.
+      // A link keeps the popup in the app's own styling instead of framing their page.
       parts.push(`<b style="color:${d.c}">${esc(d.t)}</b>`
-        +`<div style="margin-top:4px;border:1px solid var(--line);border-radius:7px;overflow:hidden;background:#fff">`
-        +`<iframe src="${esc(url)}" scrolling="auto" style="width:100%;height:76px;border:0;display:block" `
-        +`sandbox="allow-same-origin" title="${esc(d.t)} details"></iframe></div>`
-        +`<div style="margin-top:4px"><a href="https://www.somersetheritage.org.uk/" target="_blank" rel="noopener">Search the full HER record →</a></div>`);
+        +`<div style="margin-top:3px;color:var(--muted)">Records for this spot are held by the Somerset HER.</div>`
+        +`<div style="margin-top:5px"><a href="${esc(url)}" target="_blank" rel="noopener">Open the records at this point →</a></div>`
+        +`<div style="margin-top:3px"><a href="https://www.somersetheritage.org.uk/" target="_blank" rel="noopener">Search the full HER →</a></div>`);
     }
   }
   if(parts.length) L.popup({minWidth:220,maxWidth:300})
