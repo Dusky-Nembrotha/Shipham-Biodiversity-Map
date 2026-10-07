@@ -479,6 +479,26 @@ const nlsLayer = L.tileLayer("https://mapseries-tilesets.s3.amazonaws.com/25_inc
 const plainLayer = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",
   { maxZoom:19, attribution:'&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors' });
 
+/* Some historic surveys are only published in British National Grid, so these can only
+   be built once proj4 has loaded. Know Your Place's 1930s sheets come from an ArcGIS
+   service with no WMS, so each tile is requested through its export endpoint. */
+const BNGExport = L.TileLayer.extend({
+  getTileUrl: function(coords){
+    const size=this.getTileSize(), crs=L.CRS.EPSG27700;
+    const nwP=coords.scaleBy(size), seP=nwP.add(size);
+    const a=crs.project(this._map.unproject(nwP,coords.z));
+    const b=crs.project(this._map.unproject(seP,coords.z));
+    const bbox=[Math.min(a.x,b.x),Math.min(a.y,b.y),Math.max(a.x,b.x),Math.max(a.y,b.y)].join(",");
+    return this._url+"/export?bbox="+bbox+"&bboxSR=27700&imageSR=27700&size="+size.x+","+size.y
+         +"&format=png&transparent=true&dpi=96&f=image";
+  }
+});
+let _os1930=null;
+function os1930Layer(){
+  return _os1930 || (_os1930=new BNGExport(
+    "https://maps2.bristol.gov.uk/server1/rest/services/base/1930s_CSEpoch4_128dpi_mk2/MapServer",
+    { maxZoom:20, attribution:'Ordnance Survey 1930s sheets via <a href="https://maps.bristol.gov.uk/kyp/" target="_blank" rel="noopener">Know Your Place</a>, Bristol City Council' }));
+}
 /* The tithe survey is served by the Somerset HER in British National Grid, so it can
    only be built once proj4 has loaded. */
 let _tithe=null;
@@ -501,6 +521,7 @@ const BASES = {
   sat:    { label:"Satellite",      build:()=> [satLayer, labels] },
   lidar:  { label:"LiDAR terrain",  build:()=> [lidarLayer, labels] },
   nls:    { label:"Old OS (1880s)", build:()=> [nlsLayer] },
+  os1930: { label:"Old OS (1930s)", bng:true, build:()=> [os1930Layer()] },
   tithe:  { label:"Tithe map (1840s)", bng:true, build:()=> [titheLayer()] }
 };
 let currentBase = [];
