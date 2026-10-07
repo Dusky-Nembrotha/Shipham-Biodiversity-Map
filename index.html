@@ -63,6 +63,10 @@
     .showcase img{height:124px}
   }
   .proj-label{background:rgba(255,255,255,.92);border:1.5px solid #1565C0;color:#0d3c78;font-weight:700;font-size:.68rem;padding:1px 7px;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,.25);white-space:nowrap}
+  .pop-img{display:block;width:100%;max-height:150px;object-fit:cover;border-radius:8px;
+    margin:7px 0 3px;background:var(--stone);border:1px solid var(--line)}
+  .pop-cred{font-size:.6rem;color:var(--muted);margin-bottom:5px;line-height:1.3}
+  .pop-cred a{color:var(--muted)}
   .feat-label{background:rgba(255,255,255,.9);font-weight:700;font-size:.66rem;padding:1px 6px;
     border-radius:7px;box-shadow:0 1px 3px rgba(0,0,0,.22);white-space:nowrap;border-width:1.5px;border-style:solid}
   .feat-label::before{display:none!important}
@@ -1129,7 +1133,7 @@ function habColor(name){
   if(!(name in _palMap)){ _palMap[name]=_pal[_palI%_pal.length]; _palI++; }
   return _palMap[name];
 }
-const HIDE=/^(fill|cat|OBJECTID|GlobalID|Shape|FID|Easting|Northing|CaptureScale|UID|Version|THEMID|THEME|PERIMETER|X_COORD|Y_COORD|ListEntry|HYPERLINK|REF_CODE|MEASURE|LABEL|HabCodes|SHAPE_|objectid|hyperlink|gml_id|ogc_fid|Incid|Habdefver|PriDet|Descrip|UNIQUEID|MAPPINGARE|CACHAIR|ISSU|LATITUDE|LONGITUDE|GRID_REF|SAC_CODE|NGR|ROW_ID|SHAPE|InterQual|S\d|Orch|Habdef|Mapped|Confid|bus|Created|LastEdit|Last_Edit|NonTO|Globalid|Verified|Modified)/i;
+const HIDE=/^(fill|cat|OBJECTID|GlobalID|Shape|FID|Easting|Northing|CaptureScale|UID|Version|THEMID|THEME|PERIMETER|X_COORD|Y_COORD|ListEntry|HYPERLINK|REF_CODE|MEASURE|LABEL|HabCodes|SHAPE_|objectid|hyperlink|gml_id|ogc_fid|Incid|Habdefver|PriDet|Descrip|UNIQUEID|MAPPINGARE|CACHAIR|ISSU|LATITUDE|LONGITUDE|GRID_REF|SAC_CODE|NGR|ROW_ID|SHAPE|InterQual|S\d|Orch|Habdef|Mapped|Confid|bus|Created|LastEdit|Last_Edit|NonTO|Globalid|Verified|Modified|img)/i;
 /* Values arrive as raw tags, epoch milliseconds and long floats; make them readable. */
 function prettyVal(k,v){
   if(typeof v==="number"){
@@ -1176,8 +1180,14 @@ function featurePopup(def,p){
     n++;
   }
   const link = def.link && p[def.link] ? `<div style="margin-top:7px"><a href="${esc(p[def.link])}" target="_blank" rel="noopener">More detail →</a></div>` : "";
+  // a photograph where one exists, with the credit its licence requires
+  const photo = p.img ? `<img class="pop-img" src="${esc(p.img)}" alt="${esc(title)}" loading="lazy"
+      onerror="this.parentNode.removeChild(this)">`
+    + (p.imgBy||p.imgLic ? `<div class="pop-cred">${esc([p.imgBy,p.imgLic].filter(Boolean).join(" · "))}
+        · <a href="https://commons.wikimedia.org/" target="_blank" rel="noopener">Wikimedia Commons</a></div>` : "")
+    : "";
   return `<div class="pop"><span class="tag" style="background:${def.c}1a;color:${def.c}">${esc(def.t)}</span>
-    <h3>${esc(title)}</h3><div style="font-size:.78rem;line-height:1.45">${rows}</div>${link}</div>`;
+    <h3>${esc(title)}</h3>${photo}<div style="font-size:.78rem;line-height:1.45">${rows}</div>${link}</div>`;
 }
 const isPoint = f => !!(f && f.geometry && /Point$/.test(f.geometry.type));
 function styleFor(def){
@@ -1382,7 +1392,37 @@ function renderPanel(g){
     }); }
   wireAdmin();
 }
-/* A few live numbers from the layers this map has actually loaded. */
+/* Counts on the card are for the parish itself, not the wider area the layers cover. */
+function ringHas(ring,lng,lat){
+  let inside=false;
+  for(let i=0,j=ring.length-1;i<ring.length;j=i++){
+    const xi=ring[i].lng, yi=ring[i].lat, xj=ring[j].lng, yj=ring[j].lat;
+    if(((yi>lat)!==(yj>lat)) && (lng < (xj-xi)*(lat-yi)/(yj-yi)+xi)) inside=!inside;
+  }
+  return inside;
+}
+function touchesParish(l){
+  try{
+    if(l.getLatLng){ const q=l.getLatLng(); return pointInParish(q.lng,q.lat); }
+    if(l.eachLayer && !l.getLatLngs){ let hit=false; l.eachLayer(c=>{ if(!hit) hit=touchesParish(c); }); return hit; }
+    let ring=l.getLatLngs && l.getLatLngs();
+    while(Array.isArray(ring) && ring.length && !ring[0].lat) ring=ring[0];
+    if(!Array.isArray(ring) || !ring.length || !ring[0].lat) return false;
+    const step=Math.max(1,Math.floor(ring.length/40));
+    for(let i=0;i<ring.length;i+=step) if(pointInParish(ring[i].lng,ring[i].lat)) return true;
+    // a shape large enough to contain the parish has no vertex inside it
+    if(PARISH_CENTRE && ringHas(ring,PARISH_CENTRE[0],PARISH_CENTRE[1])) return true;
+  }catch(e){}
+  return false;
+}
+const _parishCount={};
+function inParish(id){
+  if(_parishCount[id]!=null) return _parishCount[id];
+  const l=built[id]; if(!l || !parishFeature) return 0;
+  const gj=l._gj||l; let n=0;
+  try{ gj.eachLayer(x=>{ if(touchesParish(x)) n++; }); }catch(e){}
+  return (_parishCount[id]=n);
+}
 function updateStats(){
   const box=$("grpStats"); if(!box) return;
   if(!CURRENT){ box.innerHTML=""; return; }
@@ -1390,12 +1430,12 @@ function updateStats(){
   const bits=[];
   ids.forEach(id=>{
     const d=LAYERS[id]; if(!d||!loaded[id]) return;
-    const l=built[id]; if(!l) return;
-    let n=0; const gj=l._gj||l;
-    try{ gj.eachLayer(()=>n++); }catch(e){}
+    const n=inParish(id);
     if(n) bits.push(`<span><b>${n.toLocaleString("en-GB")}</b> ${esc((d.t||"").toLowerCase())}</span>`);
   });
-  box.innerHTML=bits.slice(0,6).join("");
+  box.innerHTML = bits.length
+    ? '<span style="background:transparent;color:var(--muted);padding-left:0">In the parish</span>'+bits.slice(0,6).join("")
+    : "";
 }
 function renderHighlights(g){
   const hi=g.highlight, box=$("sidebox"), list=$("sidelist");

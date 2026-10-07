@@ -96,6 +96,7 @@ disputes, planning or flood insurance, always consult the definitive source.
 | Public rights of way | **Somerset Council** definitive map extract | Not the legal definitive map — indicative only |
 | HER records (monuments, findspots, lime kilns), tithe maps c.1840, tithe field boundaries, RAF aerial photography c.1946, historic landscape character | **Somerset Historic Environment Record**, South West Heritage Trust | Drawn live from their map service, not copied. HER data may be used with acknowledgement; the service is theirs, so heavy use should be agreed with them. |
 | Recent wildlife sightings | **the [iNaturalist](https://www.inaturalist.org/) community**, live via the iNaturalist API | Each observation carries its own licence, set by the recorder. Photographs remain the copyright of the photographer. |
+| Photographs of listed buildings and scheduled monuments | **Wikimedia Commons**, matched to each record through Wikidata's National Heritage List number | Each photograph keeps its own licence, mostly CC BY-SA; photographer and licence are shown with the image |
 | Community projects | Added by local people through this map | Contributed for use on this map |
 
 ### Base maps
