@@ -1003,7 +1003,16 @@ const LAYERS = {
   "listed-buildings":    {f:"listed-buildings",    t:"Listed buildings",   s:"Historic England", c:"#C62828", kind:"point", n:["Name"], grade:"Grade", link:"hyperlink"},
   "scheduled-monuments": {f:"scheduled-monuments", t:"Scheduled monuments", label:true, s:"Historic England", c:"#6D4C41", kind:"area", n:["Name"], link:"hyperlink"},
   "osm-historic-features":{f:"osm-historic-features", t:"Historic features", label:true, s:"earthworks, memorials, crosses · OSM", c:"#795548", kind:"point", n:["name","historic"]},
-  "osm-mining":    {f:"osm-mining",    t:"Mining remains",     s:"adits, shafts & workings · OSM", c:"#4E342E", kind:"point", n:["name","man_made","historic"]},
+  "mcra-caves": {f:"mcra-caves", t:"Caves", s:"Mendip Cave Registry", c:"#1A237E", kind:"point", label:true, n:["name"], link:"url",
+                attribution:'Cave and mine sites &copy; <a href="https://www.mcra.org.uk/" target="_blank" rel="noopener">Mendip Cave Registry &amp; Archive</a> \u00b7 some points from OpenStreetMap'},
+  "mcra-karst": {f:"mcra-karst", t:"Swallets & risings", s:"where water sinks and returns", c:"#0288D1", kind:"point", n:["name"], link:"url",
+                attribution:'Cave and mine sites &copy; <a href="https://www.mcra.org.uk/" target="_blank" rel="noopener">Mendip Cave Registry &amp; Archive</a> \u00b7 some points from OpenStreetMap'},
+  "mcra-mines": {f:"mcra-mines", t:"Mines & shafts", s:"calamine and lead workings", c:"#6D4C41", kind:"point", n:["name"], link:"url",
+                attribution:'Cave and mine sites &copy; <a href="https://www.mcra.org.uk/" target="_blank" rel="noopener">Mendip Cave Registry &amp; Archive</a> \u00b7 some points from OpenStreetMap'},
+  "mcra-collapses": {f:"mcra-collapses", t:"Collapses", s:"surface collapses", c:"#90A4AE", kind:"point", noStat:true, n:["name"], link:"url",
+                attribution:'Cave and mine sites &copy; <a href="https://www.mcra.org.uk/" target="_blank" rel="noopener">Mendip Cave Registry &amp; Archive</a> \u00b7 some points from OpenStreetMap'},
+  "mcra-other": {f:"mcra-other", t:"Digs, wells & other sites", s:"Mendip Cave Registry", c:"#8D6E63", kind:"point", n:["name"], link:"url",
+                attribution:'Cave and mine sites &copy; <a href="https://www.mcra.org.uk/" target="_blank" rel="noopener">Mendip Cave Registry &amp; Archive</a> \u00b7 some points from OpenStreetMap'},
   "osm-settlements":{f:"osm-settlements", t:"Villages & hamlets", label:true, s:"OpenStreetMap",       c:"#5D4037", kind:"point", n:["name"]},
 
   /* --- geology & landform --- */
@@ -1017,11 +1026,6 @@ const LAYERS = {
                       url:"https://environment.data.gov.uk/spatialdata/nafra2-risk-of-flooding-from-surface-water/wms",
                       wms:"rofsw", opacity:.75, attribution:"&copy; Environment Agency",
                       bounds:[[51.27,-2.87],[51.36,-2.72]]},
-  "mcra-sites": {f:"mcra-sites", t:"Caves, mines & karst", s:"Mendip Cave Registry & Archive",
-                c:"#263238", kind:"point", label:true, n:["name"], link:"url",
-                attribution:'Cave and mine sites &copy; <a href="https://www.mcra.org.uk/" target="_blank" rel="noopener">Mendip Cave Registry &amp; Archive</a>'},
-  "osm-caves":     {f:"osm-caves",     t:"Caves & swallets", label:true,   s:"Mendip karst · OSM",      c:"#37474F", kind:"point", n:["name"],
-                   site:{url:"https://www.mcra.org.uk/registry/registrysearch.php",label:"Look it up in the Mendip Cave Registry"}},
 
   /* --- water & vegetation --- */
   "osm-woodland-scrub":{f:"osm-woodland-scrub", t:"Woodland, scrub & heath", s:"OpenStreetMap", c:"#558B2F", kind:"wash", n:["name","natural"]},
@@ -1110,12 +1114,12 @@ const GROUPS = [
     base:"lidar",
     sections:[
       ["The rock beneath", ["bgs-bedrock","bgs-superficial"]],
-      ["Karst & landform", ["mcra-sites","osm-caves"]],
-      ["Mining & water", ["osm-mining","flood"]],
+      ["Caves, mines & karst", ["mcra-caves","mcra-karst","mcra-mines","mcra-collapses","mcra-other"]],
+      ["Water", ["flood"]],
       ["Geological designations", ["sssi"]]
     ],
-    on:["bgs-bedrock","mcra-sites","osm-mining","flood","sssi","roads-buildings"],
-    highlight:{layer:"mcra-sites", title:"Caves, mines & karst", name:["name"], sub:["type"]} },
+    on:["bgs-bedrock","mcra-caves","mcra-karst","mcra-mines","flood","sssi","roads-buildings"],
+    highlight:{layer:"mcra-caves", title:"Caves nearby", name:["name"], sub:["type"]} },
 
   { key:"history", title:"History", colour:"#795548", bg:"#F0E9E4",
     blurb:"Opens on the 1880s Ordnance Survey. Monuments, old workings and the shape of the village before the motor car.",
@@ -1128,10 +1132,10 @@ const GROUPS = [
       ["Somerset HER", ["her-monuments","her-tithebounds","her-ap1946"]],
       ["Ancient & archaeological", ["scheduled-monuments","osm-historic-features"]],
       ["Buildings & places", ["listed-buildings","osm-settlements"]],
-      ["Industry", ["osm-mining"]],
+      ["Industry", ["mcra-mines"]],
       ["Old routes", ["prow"]]
     ],
-    on:["her-monuments","scheduled-monuments","osm-historic-features","listed-buildings","osm-settlements","osm-mining","prow"],
+    on:["her-monuments","scheduled-monuments","osm-historic-features","listed-buildings","osm-settlements","mcra-mines","prow"],
     highlight:{layer:"osm-historic-features", title:"Historic features", name:["name","historic"]} },
 
   { key:"parish", title:"Parish Assets", colour:"#1565C0", bg:"#E3EDF8",
@@ -1522,7 +1526,7 @@ function updateStats(){
   const ids=[].concat.apply([],CURRENT.sections.map(x=>x[1]));
   const bits=[];
   ids.forEach(id=>{
-    const d=LAYERS[id]; if(!d||!loaded[id]) return;
+    const d=LAYERS[id]; if(!d||!loaded[id]||d.noStat) return;
     const n=inParish(id);
     if(n) bits.push(`<span><b>${n.toLocaleString("en-GB")}</b> ${esc((d.t||"").toLowerCase())}</span>`);
   });
