@@ -479,14 +479,18 @@ function titheLayer(){
       crs:L.CRS.EPSG27700, maxZoom:20,
       attribution:'Tithe map c.1840 &copy; <a href="https://swheritage.org.uk/" target="_blank" rel="noopener">South West Heritage Trust</a>' }));
 }
+/* Overlays available from the base map row, whichever themed map you are on. */
+const OVERLAYS=[
+  {id:"roads-buildings", label:"Roads & buildings"},
+  {id:"trees",           label:"Trees & woodland"}
+];
 const BASES = {
   satos:  { label:"Satellite + OS", build:()=> osReady ? [satLayer, osOutdoor] : [satLayer, labels] },
   os:     { label:"OS map",         build:()=> osReady ? [osOutdoor] : [plainLayer] },
   sat:    { label:"Satellite",      build:()=> [satLayer, labels] },
   lidar:  { label:"LiDAR terrain",  build:()=> [lidarLayer, labels] },
   nls:    { label:"Old OS (1880s)", build:()=> [nlsLayer] },
-  tithe:  { label:"Tithe map (1840s)", bng:true, build:()=> [titheLayer()] },
-  plain:  { label:"Plain map",      build:()=> [plainLayer] }
+  tithe:  { label:"Tithe map (1840s)", bng:true, build:()=> [titheLayer()] }
 };
 let currentBase = [];
 function setBase(mode){
@@ -1048,9 +1052,9 @@ const GROUPS = [
       ["Living record", ["inat","projects"]],
       ["Protected sites", ["sssi","nnr"]],
       ["Habitats", ["priority-habitats","lnrs"]],
-      ["Trees & water", ["trees","osm-trees","osm-woodland-scrub","osm-water"]]
+      ["Trees & water", ["trees","osm-trees","flood"]]
     ],
-    on:["inat","projects","sssi","nnr","osm-trees","osm-woodland-scrub","osm-water"],
+    on:["inat","projects","sssi","nnr","osm-trees","flood"],
     highlight:{layer:"sssi", title:"Protected sites nearby", name:["SSSI_NAME","NAME"]} },
 
   { key:"landscape", title:"Landscape & Heritage", colour:"#6A1B9A", bg:"#F0E8F5",
@@ -1382,23 +1386,31 @@ function renderPanel(g){
   }
   h+=`<div class="basemap"><small>Base map</small><div class="row">`;
   for(const k in BASES) h+=`<button type="button" data-base="${k}">${esc(BASES[k].label)}</button>`;
-  h+=`</div><div class="row extra"><button type="button" id="roadsBtn">+ Roads &amp; buildings</button></div></div>`;
+  h+=`</div><div class="row extra">`
+    +OVERLAYS.map(o=>`<button type="button" data-ov="${o.id}">+ ${esc(o.label)}</button>`).join("")
+    +`</div></div>`;
   h+=`<div style="border-top:1px solid var(--line);margin:8px 8px 0;padding-top:8px">
       <button id="adminBtn" style="width:100%;border:1px solid var(--line);background:#fff;color:var(--muted);padding:7px;border-radius:9px;font-size:.73rem;font-weight:600;cursor:pointer;font-family:inherit">Manage as admin</button>
       <div style="text-align:center;font-size:.62rem;color:var(--muted);margin-top:6px;opacity:.7">build 2026-10-05</div></div>`;
   $("panelBody").innerHTML=h;
   $("panelBody").querySelectorAll("[data-lyr]").forEach(cb=>
-    cb.addEventListener("change",e=>setLayer(cb.dataset.lyr,e.target.checked)));
+    cb.addEventListener("change",e=>{ setLayer(cb.dataset.lyr,e.target.checked);
+      const b=$("panelBody").querySelector('[data-ov="'+cb.dataset.lyr+'"]');
+      if(b) setTimeout(()=>b.classList.toggle("on",e.target.checked),60); }));
   $("panelBody").querySelectorAll("[data-base]").forEach(b=>
     b.addEventListener("click",()=>setBase(b.dataset.base)));
-  const rb=$("roadsBtn");
-  if(rb){
-    const isOn=()=>!!(built["roads-buildings"] && map.hasLayer(built["roads-buildings"]));
-    rb.classList.toggle("on",isOn());
-    rb.addEventListener("click",()=>{
-      setLayer("roads-buildings", !isOn());
-      setTimeout(()=>rb.classList.toggle("on",isOn()),60);
-    }); }
+  $("panelBody").querySelectorAll("[data-ov]").forEach(b=>{
+    const id=b.dataset.ov;
+    const isOn=()=>!!(built[id] && map.hasLayer(built[id]));
+    b.classList.toggle("on",isOn());
+    b.addEventListener("click",()=>{
+      const want=!isOn();
+      setLayer(id,want);
+      const cb=$("panelBody").querySelector('[data-lyr="'+id+'"]');   // keep the tick in step
+      if(cb) cb.checked=want;
+      setTimeout(()=>b.classList.toggle("on",isOn()),60);
+    });
+  });
   wireAdmin();
 }
 /* Counts on the card are for the parish itself, not the wider area the layers cover. */
