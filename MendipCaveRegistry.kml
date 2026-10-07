@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+  <!-- Google Earth Mendip Cave Registry Browser -->
+  <!-- Author: Matt Voysey -->
+  <!-- Copyright Mendip Cave Registry and Archive -->
+<kml xmlns="http://www.opengis.net/kml/2.2"
+  xmlns:gx="http://www.google.com/kml/ext/2.2"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.opengis.net/kml/2.2 http://schemas.opengis.net/kml/2.2.0/ogckml22.xsd
+    http://www.google.com/kml/ext/2.2 https://developers.google.com/kml/schema/kml22gx.xsd">
+  <Document>
+  <name>Mendip Cave Registry</name>
+  <visibility>1</visibility>
+  <open>1</open>
+    
+  <NetworkLink>
+    <visibility>1</visibility>
+    <open>1</open>
+    <flyToView>1</flyToView>
+    <Link>
+      <href>https://www.mcra.org.uk/registry/googleEarth/Registry_kml.php</href>
+    </Link>
+  </NetworkLink>
+  <NetworkLink>
+    <name>W. Stanton Maps</name>
+    <Snippet maxLines="1">Mendip Depressions</Snippet>
+    <Link><href>https://www.mcra.org.uk/stanton_maps/Stanton_Maps.kml</href></Link>
+    <visibility>0</visibility>
+  </NetworkLink>
+  </Document>
+</kml>

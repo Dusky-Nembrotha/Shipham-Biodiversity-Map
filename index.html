@@ -482,7 +482,8 @@ function titheLayer(){
 /* Overlays available from the base map row, whichever themed map you are on. */
 const OVERLAYS=[
   {id:"roads-buildings", label:"Roads & buildings"},
-  {id:"trees",           label:"Trees & woodland"}
+  {id:"trees",           label:"Trees & woodland"},
+  {id:"land-registry",   label:"Land Registry"}
 ];
 const BASES = {
   satos:  { label:"Satellite + OS", build:()=> osReady ? [satLayer, osOutdoor] : [satLayer, labels] },
@@ -625,7 +626,6 @@ function inatFallback(){
 const inatShowcase=[]; let showcaseDone=false;
 function renderShowcase(){
   const box=document.getElementById("showcase"); if(!box) return;
-  if(!CURRENT || CURRENT.key!=="biodiversity"){ box.hidden=true; return; }   // not this map's content
   if(!inatShowcase.length){ box.hidden=true; return; }
   const pool=inatShowcase.slice();
   for(let i=pool.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [pool[i],pool[j]]=[pool[j],pool[i]]; }
@@ -635,7 +635,7 @@ function renderShowcase(){
     +`<img src="${esc(o.thumb)}" alt="" loading="lazy" onerror="this.parentNode.style.display='none'">`
     +`<div class="sc-txt"><span class="sc-sp">${esc(o.common)}</span><span class="sc-by">by ${esc(o.recorder)}</span></div></a>`
   ).join("");
-  box.hidden=false;
+  box.hidden = !(CURRENT && CURRENT.key==="biodiversity");
 }
 function addINatObs(o){
   if(!o.geojson || seen.inat.has(o.id)) return;
@@ -959,6 +959,9 @@ const LAYERS = {
   /* --- designations & habitats --- */
   sssi:        {f:"sssi",        t:"Protected wildlife sites", label:true, s:"SSSIs · Natural England", c:"#D81B83", kind:"area", n:["SSSI_NAME","NAME"], designation:"SSSI"},
   nnr:         {f:"nnr",         t:"National nature reserve", label:true,  s:"Natural England",          c:"#00695C", kind:"area", n:["NAME"], designation:"National nature reserve"},
+  "land-registry": {f:"land-registry", t:"Land Registry boundaries", s:"INSPIRE index polygons \u00b7 HM Land Registry",
+                c:"#B5651D", kind:"parcels", n:["id"],
+                attribution:'This information is subject to Crown copyright and database rights 2026 and is reproduced with the permission of HM Land Registry. The polygons (including the associated geometry, namely x, y co-ordinates) are subject to Crown copyright and database rights 2026 Ordnance Survey 100026316. <a href="https://use-land-property-data.service.gov.uk/datasets/inspire/#conditions" target="_blank" rel="noopener">Conditions</a>'},
   "roads-buildings": {f:"roads-buildings", t:"Roads & buildings", s:"OS Open Roads \u00b7 OpenStreetMap buildings",
                 c:"#4E5A52", kind:"roads", n:["name"], heavy:true,
                 attribution:'Roads &copy; Crown copyright, OS Open Roads (OGL) \u00b7 buildings &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors'},
@@ -995,7 +998,6 @@ const LAYERS = {
                    site:{url:"https://www.mcra.org.uk/registry/registrysearch.php",label:"Look it up in the Mendip Cave Registry"}},
 
   /* --- water & vegetation --- */
-  "osm-water":     {f:"osm-water",     t:"Rivers, streams & ponds", s:"OpenStreetMap",      c:"#1E88E5", kind:"line", n:["name","waterway","natural"]},
   "osm-woodland-scrub":{f:"osm-woodland-scrub", t:"Woodland, scrub & heath", s:"OpenStreetMap", c:"#558B2F", kind:"wash", n:["name","natural"]},
   "osm-trees":     {f:"osm-trees",     t:"Notable trees",      s:"individually mapped · OSM", c:"#2E7D32", kind:"point", small:true, n:["name","species"]},
 
@@ -1035,10 +1037,9 @@ const GROUPS = [
     base:"os",
     sections:[
       ["Getting about", ["prow","osm-viewpoints"]],
-      ["The village", ["osm-community-buildings","osm-shops-pubs","osm-recreation"]],
-      ["Rivers & streams", ["osm-water"]]
+      ["The village", ["osm-community-buildings","osm-shops-pubs","osm-recreation"]]
     ],
-    on:["prow","osm-viewpoints","osm-community-buildings","osm-shops-pubs","osm-recreation","osm-water"],
+    on:["prow","osm-viewpoints","osm-community-buildings","osm-shops-pubs","osm-recreation"],
     highlight:{layer:"osm-community-buildings", title:"Around the village", name:["name"], sub:["amenity"], parishOnly:true} },
 
   { key:"biodiversity", title:"Biodiversity", colour:"#2F5D3A", bg:"#E6F0E7",
@@ -1084,10 +1085,10 @@ const GROUPS = [
     sections:[
       ["The rock beneath", ["bgs-bedrock","bgs-superficial"]],
       ["Karst & landform", ["osm-caves"]],
-      ["Mining & water", ["osm-mining","flood","osm-water"]],
+      ["Mining & water", ["osm-mining","flood"]],
       ["Geological designations", ["sssi"]]
     ],
-    on:["bgs-bedrock","osm-caves","osm-mining","flood","osm-water","sssi"],
+    on:["bgs-bedrock","osm-caves","osm-mining","flood","sssi"],
     highlight:{layer:"osm-caves", title:"Caves & swallets", name:["name"]} },
 
   { key:"history", title:"History", colour:"#795548", bg:"#F0E9E4",
@@ -1118,9 +1119,9 @@ const GROUPS = [
       ["Community", ["osm-community-buildings"]],
       ["Services & recreation", ["osm-shops-pubs","osm-recreation","osm-street-furniture"]],
       ["Getting about", ["prow","osm-viewpoints"]],
-      ["Risk & water", ["flood","osm-water"]]
+      ["Risk & water", ["flood"]]
     ],
-    on:["osm-community-buildings","osm-shops-pubs","osm-recreation","osm-street-furniture","prow","osm-viewpoints","osm-water"],
+    on:["osm-community-buildings","osm-shops-pubs","osm-recreation","osm-street-furniture","prow","osm-viewpoints"],
     highlight:{layer:"osm-community-buildings", title:"Community buildings", name:["name"], sub:["amenity"]} }
 ];
 
@@ -1202,6 +1203,8 @@ function styleFor(def){
   return f=>{
     // Points keep the size pointToLayer gave them; only their colour is ours.
     if(isPoint(f)) return {color:"#fff",weight:1.6,fillColor:def.c,fillOpacity:1};
+    if(def.kind==="parcels") return {color:"#B5651D",weight:1,opacity:.85,fill:true,
+      fillColor:"#B5651D",fillOpacity:.06};
     if(def.kind==="roads") return /Line/.test(f.geometry&&f.geometry.type)
       ? {color:"#3f4a43",weight:1.7,opacity:.95,fill:false}
       : {color:"#5c6660",weight:.7,opacity:.9,fillColor:"#78837c",fillOpacity:.75};
@@ -1520,7 +1523,7 @@ function openGroup(key){
   map.addLayer(parishGroup);
   g.on.forEach(id=>{ if(LAYERS[id]) setLayer(id,true); });
   renderHighlights(g);        // layers already cached from an earlier visit render nothing otherwise
-  $("showcase").hidden = g.key!=="biodiversity";
+  renderShowcase();            // rebuild and re-evaluate on every map switch
   $("addBtn").hidden = !g.add;
   $("brand").hidden=false; $("panel").hidden=false;
   const im=$("brandImg");
