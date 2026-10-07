@@ -63,6 +63,9 @@
     .showcase img{height:124px}
   }
   .proj-label{background:rgba(255,255,255,.92);border:1.5px solid #1565C0;color:#0d3c78;font-weight:700;font-size:.68rem;padding:1px 7px;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,.25);white-space:nowrap}
+  .feat-label{background:rgba(255,255,255,.9);font-weight:700;font-size:.66rem;padding:1px 6px;
+    border-radius:7px;box-shadow:0 1px 3px rgba(0,0,0,.22);white-space:nowrap;border-width:1.5px;border-style:solid}
+  .feat-label::before{display:none!important}
   .proj-label.leaflet-tooltip-top::before,.proj-label.leaflet-tooltip-bottom::before,.proj-label.leaflet-tooltip-left::before,.proj-label.leaflet-tooltip-right::before{display:none}
   .brand p{margin:.5rem 0 0;font-size:.77rem;color:var(--muted);line-height:1.3}
 
@@ -200,6 +203,9 @@
   }
   /* Licence conditions mean every credit has to stay readable, so this is made small
      and quiet rather than truncated. */
+  .roads-overlay{mix-blend-mode:multiply;filter:saturate(.25) contrast(1.15)}
+  .basemap .row.extra{margin-top:6px}
+  .basemap .row.extra button.on{background:var(--slate);border-color:var(--slate);color:#fff}
   .leaflet-control-attribution{font-size:9.5px!important;line-height:1.35;
     background:rgba(251,250,246,.72)!important;color:#7d8a81;padding:1px 6px;
     border-radius:6px 0 0 0;max-width:72vw}
@@ -433,7 +439,7 @@ map.createPane("wmsPane"); map.getPane("wmsPane").style.zIndex = 360;    // rast
    but each pane gets a full-size canvas, and the topmost one receives all the clicks,
    so polygons underneath could never be selected. Stacking is handled by draw order
    instead: washes to the back, points and lines to the front. */
-const VEC = L.canvas({ padding:0.3, tolerance:8 });
+const VEC = L.canvas({ padding:0.3, tolerance:14 });   // generous, so a near-miss still selects
 
 /* ---------- Base maps ---------- */
 const satLayer = mtReady
@@ -457,16 +463,37 @@ const nlsLayer = L.tileLayer("https://mapseries-tilesets.s3.amazonaws.com/25_inc
 const plainLayer = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",
   { maxZoom:19, attribution:'&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors' });
 
+/* OpenStreetMap blended with multiply: the dark roads, buildings and names show
+   through while the pale background disappears. Useful over LiDAR and imagery. */
+const roadsLayer = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+  { maxZoom:19, opacity:.9, className:"roads-overlay", pane:"wmsPane",
+    attribution:'Roads &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors' });
+/* The tithe survey is served by the Somerset HER in British National Grid, so it can
+   only be built once proj4 has loaded. */
+let _tithe=null;
+function titheLayer(){
+  return _tithe || (_tithe=L.tileLayer.wms("https://www.somersetheritage.org.uk/herwms",
+    { layers:"TitheRaster", format:"image/png", transparent:false, version:"1.1.1",
+      crs:L.CRS.EPSG27700, maxZoom:20,
+      attribution:'Tithe map c.1840 &copy; <a href="https://swheritage.org.uk/" target="_blank" rel="noopener">South West Heritage Trust</a>' }));
+}
 const BASES = {
   satos:  { label:"Satellite + OS", build:()=> osReady ? [satLayer, osOutdoor] : [satLayer, labels] },
   os:     { label:"OS map",         build:()=> osReady ? [osOutdoor] : [plainLayer] },
   sat:    { label:"Satellite",      build:()=> [satLayer, labels] },
   lidar:  { label:"LiDAR terrain",  build:()=> [lidarLayer, labels] },
   nls:    { label:"Old OS (1880s)", build:()=> [nlsLayer] },
+  tithe:  { label:"Tithe map (1840s)", bng:true, build:()=> [titheLayer()] },
   plain:  { label:"Plain map",      build:()=> [plainLayer] }
 };
 let currentBase = [];
 function setBase(mode){
+  const def=BASES[mode];
+  if(def && def.bng && !L.CRS.EPSG27700){        // needs British National Grid support first
+    document.querySelectorAll("[data-base]").forEach(el=>el.classList.toggle("active", el.dataset.base===mode));
+    ensureBNG().then(()=>setBase(mode)).catch(()=>toast("Couldn't load the historic base map."));
+    return;
+  }
   currentBase.forEach(l=>{ if(l) map.removeLayer(l); });
   const b = BASES[mode] || BASES.satos;
   currentBase = b.build().filter(Boolean);
@@ -923,34 +950,25 @@ document.getElementById("saveBtn").addEventListener("click", e=>{ e.preventDefau
 ================================================================= */
 const LAYERS = {
   /* --- designations & habitats --- */
-  sssi:        {f:"sssi",        t:"Protected wildlife sites", s:"SSSIs · Natural England", c:"#D81B83", kind:"area", n:["SSSI_NAME","NAME"], designation:"SSSI"},
-  lnr:         {f:"lnr",         t:"Local nature reserves",    s:"Natural England",          c:"#00897B", kind:"area", n:["NAME"], designation:"Local nature reserve"},
-  nnr:         {f:"nnr",         t:"National nature reserve",  s:"Natural England",          c:"#00695C", kind:"area", n:["NAME"], designation:"National nature reserve"},
-  sac:         {f:"sac",         t:"Special Areas of Conservation", s:"European designation · Natural England", c:"#7B1FA2", kind:"area", n:["SAC_NAME","NAME"]},
+  sssi:        {f:"sssi",        t:"Protected wildlife sites", label:true, s:"SSSIs · Natural England", c:"#D81B83", kind:"area", n:["SSSI_NAME","NAME"], designation:"SSSI"},
+  nnr:         {f:"nnr",         t:"National nature reserve", label:true,  s:"Natural England",          c:"#00695C", kind:"area", n:["NAME"], designation:"National nature reserve"},
+  trees:       {f:"trees",       t:"Trees & woodland",  s:"ancient woodland, woods and tree groups", c:"#2E7D32", kind:"wash", colorBy:["treeType"], n:["detail"], heavy:true},
   "priority-habitats": {f:"priority-habitats", t:"Priority habitats", s:"Habitat inventory · Natural England", c:"#43A047", kind:"wash", colorBy:["MainHabs"], n:["MainHabs"]},
-  "ancient-woodland":  {f:"ancient-woodland",  t:"Ancient woodland", s:"Continuously wooded since 1600 · NE", c:"#1B5E20", kind:"wash", n:["THEMNAME","NAME"]},
-  orchards:    {f:"orchards",    t:"Traditional orchards",     s:"Priority habitat · Natural England", c:"#EF6C00", kind:"wash", n:["Prihabtxt"]},
-  "wood-pasture":{f:"wood-pasture",t:"Wood pasture & parkland", s:"Natural England",         c:"#8D6E63", kind:"wash", n:["MainHabs"]},
   lnrs:        {f:"lnrs",        t:"Nature recovery (LNRS)",   s:"Somerset habitat priority areas", c:"#4E8E63", kind:"wash", fillProp:"fill", n:["cat"],
                 attribution:'Somerset LNRS &copy; <a href="https://www.somersetwildlife.org/" target="_blank" rel="noopener">Somerset Wildlife Trust</a>'},
-  "nature-projects":{f:"nature-projects", t:"Nature recovery project", s:"Natural England", c:"#2E7D32", kind:"area", n:["Project_Na","NAME"]},
-  "tree-groups":   {f:"tree-groups",   t:"Tree groups",        s:"Canopy outside woodland · NFI", c:"#43A047", kind:"wash", heavy:true},
-  "woodland-nfi":  {f:"woodland-nfi",  t:"Woodland (NFI)",     s:"National Forest Inventory",     c:"#2E7D32", kind:"wash", n:["hab"], heavy:true},
 
   /* --- landscape & access --- */
-  "national-landscape":{f:"national-landscape", t:"Mendip Hills National Landscape", s:"formerly AONB · Natural England", c:"#6A1B9A", kind:"area", faint:true, n:["NAME"]},
+  "national-landscape":{f:"national-landscape", t:"Mendip Hills National Landscape", label:true, s:"formerly AONB · Natural England", c:"#6A1B9A", kind:"area", faint:true, z:-1, n:["NAME"]},
   "open-access":   {f:"open-access",   t:"Open access land",   s:"CRoW Act 2000 · Natural England", c:"#558B2F", kind:"wash", n:[]},
   "common-land":   {f:"common-land",   t:"Registered common land", s:"CRoW Act 2000 · Natural England", c:"#827717", kind:"wash", n:["NAME","REF"]},
   prow:        {f:"prow",        t:"Public rights of way",     s:"footpaths, bridleways & byways", c:"#2EE65C", kind:"line", dash:"6 6", n:["ROW_TYPE"]},
 
   /* --- heritage & history --- */
-  "conservation-areas":  {f:"conservation-areas",  t:"Conservation areas", s:"Historic England", c:"#B71C1C", kind:"area", n:["Name","NAME"]},
   "listed-buildings":    {f:"listed-buildings",    t:"Listed buildings",   s:"Historic England", c:"#C62828", kind:"point", n:["Name"], grade:"Grade", link:"hyperlink"},
-  "listed-building-areas":{f:"listed-building-areas",t:"Listed building extents", s:"Historic England", c:"#AD1457", kind:"wash", n:["Name"]},
-  "scheduled-monuments": {f:"scheduled-monuments", t:"Scheduled monuments", s:"Historic England", c:"#6D4C41", kind:"area", n:["Name"], link:"hyperlink"},
-  "osm-historic-features":{f:"osm-historic-features", t:"Historic features", s:"earthworks, memorials, crosses · OSM", c:"#795548", kind:"point", n:["name","historic"]},
+  "scheduled-monuments": {f:"scheduled-monuments", t:"Scheduled monuments", label:true, s:"Historic England", c:"#6D4C41", kind:"area", n:["Name"], link:"hyperlink"},
+  "osm-historic-features":{f:"osm-historic-features", t:"Historic features", label:true, s:"earthworks, memorials, crosses · OSM", c:"#795548", kind:"point", n:["name","historic"]},
   "osm-mining":    {f:"osm-mining",    t:"Mining remains",     s:"adits, shafts & workings · OSM", c:"#4E342E", kind:"point", n:["name","man_made","historic"]},
-  "osm-settlements":{f:"osm-settlements", t:"Villages & hamlets", s:"OpenStreetMap",       c:"#5D4037", kind:"point", n:["name"]},
+  "osm-settlements":{f:"osm-settlements", t:"Villages & hamlets", label:true, s:"OpenStreetMap",       c:"#5D4037", kind:"point", n:["name"]},
 
   /* --- geology & landform --- */
   "bgs-bedrock":     {kind:"wms", info:true, t:"Bedrock geology", s:"BGS 1:625 000", c:"#A1887F",
@@ -963,9 +981,7 @@ const LAYERS = {
                       url:"https://environment.data.gov.uk/spatialdata/nafra2-risk-of-flooding-from-surface-water/wms",
                       wms:"rofsw", opacity:.75, attribution:"&copy; Environment Agency",
                       bounds:[[51.27,-2.87],[51.36,-2.72]]},
-  "osm-caves":     {f:"osm-caves",     t:"Caves & swallets",   s:"Mendip karst · OSM",      c:"#37474F", kind:"point", n:["name"]},
-  "osm-cliffs-rock":{f:"osm-cliffs-rock", t:"Cliffs & rock",   s:"OpenStreetMap",           c:"#6D4C41", kind:"line", n:["name","natural"]},
-  "osm-springs":   {f:"osm-springs",   t:"Springs",            s:"OpenStreetMap",           c:"#0288D1", kind:"point", n:["name","natural"]},
+  "osm-caves":     {f:"osm-caves",     t:"Caves & swallets", label:true,   s:"Mendip karst · OSM",      c:"#37474F", kind:"point", n:["name"]},
 
   /* --- water & vegetation --- */
   "osm-water":     {f:"osm-water",     t:"Rivers, streams & ponds", s:"OpenStreetMap",      c:"#1E88E5", kind:"line", n:["name","waterway","natural"]},
@@ -973,7 +989,7 @@ const LAYERS = {
   "osm-trees":     {f:"osm-trees",     t:"Notable trees",      s:"individually mapped · OSM", c:"#2E7D32", kind:"point", small:true, n:["name","species"]},
 
   /* --- parish assets --- */
-  "osm-community-buildings":{f:"osm-community-buildings", t:"Community buildings", s:"halls, churches, schools · OSM", c:"#00695C", kind:"point", n:["name","amenity"]},
+  "osm-community-buildings":{f:"osm-community-buildings", t:"Community buildings", label:true, s:"halls, churches, schools · OSM", c:"#00695C", kind:"point", n:["name","amenity"]},
   "osm-shops-pubs":{f:"osm-shops-pubs",t:"Shops, pubs & cafés", s:"OpenStreetMap",          c:"#F57C00", kind:"point", n:["name","amenity","shop"]},
   "osm-recreation":{f:"osm-recreation",t:"Recreation & open space", s:"OpenStreetMap",      c:"#7CB342", kind:"wash", n:["name","leisure"]},
   "osm-street-furniture":{f:"osm-street-furniture", t:"Benches, post boxes & stops", s:"OpenStreetMap", c:"#5C6BC0", kind:"point", small:true, n:["name","amenity","highway","man_made"]},
@@ -982,8 +998,6 @@ const LAYERS = {
   /* --- Somerset HER, served live in British National Grid --- */
   "her-monuments": {kind:"wms", info:true, srs:"27700", t:"HER records", s:"monuments, findspots, kilns \u00b7 Somerset HER",
                     c:"#AD1457", url:"https://www.somersetheritage.org.uk/herwms", wms:"Monuments", opacity:.9, attribution:'Somerset HER &copy; <a href="https://swheritage.org.uk/" target="_blank" rel="noopener">South West Heritage Trust</a>'},
-  "her-tithe":     {kind:"wms", srs:"27700", t:"Tithe map (1840s)", s:"Somerset HER", c:"#8D6E63",
-                    url:"https://www.somersetheritage.org.uk/herwms", wms:"TitheRaster", opacity:.85, attribution:'Somerset HER &copy; <a href="https://swheritage.org.uk/" target="_blank" rel="noopener">South West Heritage Trust</a>'},
   "her-tithebounds":{kind:"wms", info:true, srs:"27700", t:"Tithe field boundaries", s:"Somerset HER", c:"#6D4C41",
                     url:"https://www.somersetheritage.org.uk/herwms", wms:"TitheBounds", opacity:.9, attribution:'Somerset HER &copy; <a href="https://swheritage.org.uk/" target="_blank" rel="noopener">South West Heritage Trust</a>'},
   "her-ap1946":    {kind:"wms", srs:"27700", t:"RAF aerial photos (1946)", s:"Somerset HER", c:"#546E7A",
@@ -1025,11 +1039,11 @@ const GROUPS = [
     base:"satos", add:true,
     sections:[
       ["Living record", ["inat","projects"]],
-      ["Protected sites", ["sssi","lnr","nnr","sac","nature-projects"]],
-      ["Habitats", ["priority-habitats","ancient-woodland","orchards","wood-pasture","lnrs"]],
-      ["Trees & water", ["osm-trees","osm-woodland-scrub","osm-water","tree-groups","woodland-nfi"]]
+      ["Protected sites", ["sssi","nnr"]],
+      ["Habitats", ["priority-habitats","lnrs"]],
+      ["Trees & water", ["trees","osm-trees","osm-woodland-scrub","osm-water"]]
     ],
-    on:["inat","projects","sssi","lnr","nnr","sac","nature-projects","priority-habitats","ancient-woodland","orchards","wood-pasture","lnrs","osm-trees","osm-woodland-scrub","osm-water"],
+    on:["inat","projects","sssi","nnr","osm-trees","osm-woodland-scrub","osm-water"],
     highlight:{layer:"sssi", title:"Protected sites nearby", name:["SSSI_NAME","NAME"]} },
 
   { key:"landscape", title:"Landscape & Heritage", colour:"#6A1B9A", bg:"#F0E8F5",
@@ -1040,13 +1054,13 @@ const GROUPS = [
     icon:'<path d="M3 18l5-7 4 5 3-4 6 6zM7 7h.01"/><circle cx="7" cy="7" r="1.6"/>',
     base:"os",
     sections:[
-      ["Designated landscape", ["national-landscape","conservation-areas"]],
-      ["Built heritage", ["listed-buildings","listed-building-areas","scheduled-monuments"]],
+      ["Designated landscape", ["national-landscape"]],
+      ["Built heritage", ["listed-buildings","scheduled-monuments"]],
       ["Access & rights of way", ["prow","open-access","common-land"]],
-      ["Views & landform", ["osm-viewpoints","osm-cliffs-rock","osm-woodland-scrub"]],
+      ["Views & landform", ["osm-viewpoints","osm-woodland-scrub"]],
       ["Historic character", ["her-hlc"]]
     ],
-    on:["national-landscape","conservation-areas","listed-buildings","listed-building-areas","scheduled-monuments","prow","open-access","common-land","osm-viewpoints","osm-cliffs-rock"],
+    on:["national-landscape","listed-buildings","scheduled-monuments","prow","open-access","common-land","osm-viewpoints"],
     highlight:{layer:"listed-buildings", title:"Listed buildings", name:["Name"], sub:["Grade"], subPrefix:"Grade ", parishOnly:true} },
 
   { key:"geology", title:"Geology", colour:"#8D6E63", bg:"#F2EBE6",
@@ -1058,11 +1072,11 @@ const GROUPS = [
     base:"lidar",
     sections:[
       ["The rock beneath", ["bgs-bedrock","bgs-superficial"]],
-      ["Karst & landform", ["osm-caves","osm-cliffs-rock","osm-springs"]],
+      ["Karst & landform", ["osm-caves"]],
       ["Mining & water", ["osm-mining","flood","osm-water"]],
       ["Geological designations", ["sssi"]]
     ],
-    on:["bgs-bedrock","osm-caves","osm-cliffs-rock","osm-springs","osm-mining","osm-water","sssi"],
+    on:["bgs-bedrock","osm-caves","osm-mining","osm-water","sssi"],
     highlight:{layer:"osm-caves", title:"Caves & swallets", name:["name"]} },
 
   { key:"history", title:"History", colour:"#795548", bg:"#F0E9E4",
@@ -1073,13 +1087,13 @@ const GROUPS = [
     icon:'<path d="M5 21V8l7-4 7 4v13"/><path d="M9 21v-6h6v6"/>',
     base:"nls",
     sections:[
-      ["Somerset HER", ["her-monuments","her-tithe","her-tithebounds","her-ap1946"]],
+      ["Somerset HER", ["her-monuments","her-tithebounds","her-ap1946"]],
       ["Ancient & archaeological", ["scheduled-monuments","osm-historic-features"]],
-      ["Buildings & places", ["listed-buildings","conservation-areas","osm-settlements"]],
+      ["Buildings & places", ["listed-buildings","osm-settlements"]],
       ["Industry", ["osm-mining"]],
       ["Old routes", ["prow"]]
     ],
-    on:["her-monuments","her-tithebounds","scheduled-monuments","osm-historic-features","listed-buildings","conservation-areas","osm-settlements","osm-mining","prow"],
+    on:["her-monuments","her-tithebounds","scheduled-monuments","osm-historic-features","listed-buildings","osm-settlements","osm-mining","prow"],
     highlight:{layer:"osm-historic-features", title:"Historic features", name:["name","historic"]} },
 
   { key:"parish", title:"Parish Assets", colour:"#1565C0", bg:"#E3EDF8",
@@ -1180,14 +1194,21 @@ function styleFor(def){
 }
 /* One canvas per pane, with a tap tolerance — a 4px dot is otherwise almost
    impossible to hit with a finger. */
-/* Washes and areas sit behind; lines and points in front and therefore clickable. */
-const toBack = d => d.kind==="wash" || d.kind==="area";
+/* Stacking order decides which feature a click reaches where polygons overlap, so it
+   is explicit: broad washes at the back, then designations, then lines, then points.
+   Within a rank the catalogue order decides, so it never shuffles. */
+const RANK={wash:0, area:1, line:2, point:3};
 function restack(){
-  Object.keys(built).forEach(id=>{
-    const d=LAYERS[id], l=built[id];
-    if(!d || !l || d.kind==="wms" || !map.hasLayer(l)) return;
-    try{ toBack(d) ? l.bringToBack() : l.bringToFront(); }catch(e){}
+  const order=Object.keys(LAYERS);
+  const live=order.filter(id=>{ const l=built[id];
+    return LAYERS[id].kind!=="wms" && l && map.hasLayer(l); });
+  live.sort((a,b)=>{
+    const za=LAYERS[a].z??0, zb=LAYERS[b].z??0;            // z pushes a layer out of its rank
+    if(za!==zb) return za-zb;
+    const ra=RANK[LAYERS[a].kind]??2, rb=RANK[LAYERS[b].kind]??2;
+    return ra-rb || order.indexOf(a)-order.indexOf(b);
   });
+  live.forEach(id=>{ try{ built[id].bringToFront(); }catch(e){} });   // back to front
   try{ parishGroup.eachLayer(l=>l.bringToFront && l.bringToFront()); }catch(e){}
 }
 /* Attribution is a licence condition for several of these sources — OpenStreetMap's
@@ -1197,15 +1218,14 @@ const ATTRIB={
   ne:'&copy; Natural England (OGL v3)', he:'&copy; Historic England (OGL v3)',
   fc:'&copy; Forestry Commission (OGL v3)', sc:'Rights of way &copy; Somerset Council'
 };
-const NE_IDS=["sssi","lnr","nnr","sac","priority-habitats","ancient-woodland","orchards",
-              "wood-pasture","open-access","common-land","national-landscape","nature-projects"];
-const HE_IDS=["listed-buildings","listed-building-areas","scheduled-monuments","conservation-areas"];
+const NE_IDS=["sssi","nnr","priority-habitats","open-access","common-land","national-landscape"];
+const HE_IDS=["listed-buildings","scheduled-monuments"];
 function attribFor(id,d){
   if(d.attribution) return d.attribution;
   if(id.startsWith("osm-")) return ATTRIB.osm;
   if(NE_IDS.includes(id))   return ATTRIB.ne;
   if(HE_IDS.includes(id))   return ATTRIB.he;
-  if(id==="tree-groups"||id==="woodland-nfi") return ATTRIB.fc;
+  if(id==="trees") return ATTRIB.ne+" / "+ATTRIB.fc;   // ancient woodland is NE, the rest Forestry Commission
   if(id==="prow")           return ATTRIB.sc;
   return undefined;
 }
@@ -1227,6 +1247,19 @@ function ensureBNG(){
   })();
   return _bngReady;
 }
+/* Key layers carry a permanent label, like the community projects do, in their own
+   colour. Only features with a real name get one — labelling every "Tree" would be noise. */
+function addLabel(d,f,l,isPt){
+  if(!d.label || !l.bindTooltip) return;
+  const p=f.properties||{};
+  let nm=(d.n||[]).map(k=>p[k]).find(v=>v&&String(v).trim());
+  if(!nm) nm=["name","Name","NAME"].map(k=>p[k]).find(v=>v&&String(v).trim());
+  if(!nm || isTag(nm)) return;
+  l.bindTooltip(esc(tidyName(nm)),{permanent:true,direction:isPt?"top":"center",
+    className:"feat-label",offset:isPt?[0,-11]:[0,0]});
+  l.on("add",()=>{ const t=l.getTooltip&&l.getTooltip();
+    if(t&&t._container){ t._container.style.borderColor=d.c; t._container.style.color=d.c; } });
+}
 const built={}, loaded={}, loading={};
 function layerOf(id){
   if(built[id]) return built[id];
@@ -1246,17 +1279,21 @@ function layerOf(id){
     style: styleFor(d),
     pointToLayer:(f,ll)=>{
       const m=L.circleMarker(ll,{renderer:VEC,
-                radius:d.small?5:7,color:"#fff",weight:1.6,fillColor:d.c,fillOpacity:1});
+                radius:d.small?6:8,color:"#fff",weight:1.6,fillColor:d.c,fillOpacity:1});
       if(d.designation) bindDesignation(f,m,d.designation,d.c);
       else m.bindPopup(featurePopup(d,f.properties||{}),{minWidth:210,maxWidth:260});
+      addLabel(d,f,m,true);
       return m;
     },
     onEachFeature:(f,l)=>{
       if(/Point$/.test(f.geometry&&f.geometry.type)) return;   // already bound above
       if(d.designation) bindDesignation(f,l,d.designation,d.c);
       else l.bindPopup(featurePopup(d,f.properties||{}),{minWidth:210,maxWidth:260});
+      addLabel(d,f,l,false);
     }
   });
+  // mark the event so the raster lookup below does not replace this feature's popup
+  gj.on("click", e=>{ if(e.originalEvent) e.originalEvent.__featureHit=true; });
   built[id]= d.cluster ? L.markerClusterGroup({maxClusterRadius:50,showCoverageOnHover:false}) : gj;
   built[id]._gj = gj;
   return built[id];
@@ -1328,7 +1365,7 @@ function renderPanel(g){
   }
   h+=`<div class="basemap"><small>Base map</small><div class="row">`;
   for(const k in BASES) h+=`<button type="button" data-base="${k}">${esc(BASES[k].label)}</button>`;
-  h+=`</div></div>`;
+  h+=`</div><div class="row extra"><button type="button" id="roadsBtn">+ Roads &amp; buildings</button></div></div>`;
   h+=`<div style="border-top:1px solid var(--line);margin:8px 8px 0;padding-top:8px">
       <button id="adminBtn" style="width:100%;border:1px solid var(--line);background:#fff;color:var(--muted);padding:7px;border-radius:9px;font-size:.73rem;font-weight:600;cursor:pointer;font-family:inherit">Manage as admin</button>
       <div style="text-align:center;font-size:.62rem;color:var(--muted);margin-top:6px;opacity:.7">build 2026-10-05</div></div>`;
@@ -1337,6 +1374,12 @@ function renderPanel(g){
     cb.addEventListener("change",e=>setLayer(cb.dataset.lyr,e.target.checked)));
   $("panelBody").querySelectorAll("[data-base]").forEach(b=>
     b.addEventListener("click",()=>setBase(b.dataset.base)));
+  const rb=$("roadsBtn");
+  if(rb){ rb.classList.toggle("on",map.hasLayer(roadsLayer));
+    rb.addEventListener("click",()=>{
+      if(map.hasLayer(roadsLayer)) map.removeLayer(roadsLayer); else roadsLayer.addTo(map);
+      rb.classList.toggle("on",map.hasLayer(roadsLayer));
+    }); }
   wireAdmin();
 }
 /* A few live numbers from the layers this map has actually loaded. */
@@ -1472,6 +1515,9 @@ function infoText(html){
   return (doc.body?doc.body.textContent:"").replace(/\s+/g," ").trim();
 }
 map.on("click", async e=>{
+  if(e.originalEvent && e.originalEvent.__featureHit) return;   // a feature answered already
+  await new Promise(r=>setTimeout(r,70));                       // let any feature popup open first
+  if(map._popup && map._popup.isOpen()) return;                 // something nearer answered
   const live=Object.keys(LAYERS).filter(id=>LAYERS[id].kind==="wms" && LAYERS[id].info
                  && built[id] && map.hasLayer(built[id]));
   if(!live.length) return;
@@ -1485,9 +1531,12 @@ map.on("click", async e=>{
       if(t && t.length>1) parts.push(`<b style="color:${d.c}">${esc(d.t)}</b><div>${esc(t).slice(0,600)}</div>`);
     }catch(_){
       // blocked cross-origin - show the service's own reply in a frame
+      // cross-origin, so the service's own reply has to be framed rather than restyled
       parts.push(`<b style="color:${d.c}">${esc(d.t)}</b>`
-        +`<iframe src="${esc(url)}" style="width:100%;height:124px;border:0;background:#fff;border-radius:6px" `
-        +`sandbox="allow-same-origin" title="${esc(d.t)} details"></iframe>`);
+        +`<div style="margin-top:4px;border:1px solid var(--line);border-radius:7px;overflow:hidden;background:#fff">`
+        +`<iframe src="${esc(url)}" scrolling="auto" style="width:100%;height:76px;border:0;display:block" `
+        +`sandbox="allow-same-origin" title="${esc(d.t)} details"></iframe></div>`
+        +`<div style="margin-top:4px"><a href="https://www.somersetheritage.org.uk/" target="_blank" rel="noopener">Search the full HER record →</a></div>`);
     }
   }
   if(parts.length) L.popup({minWidth:220,maxWidth:300})
