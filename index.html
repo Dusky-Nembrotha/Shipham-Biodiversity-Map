@@ -207,7 +207,8 @@
   }
   /* Licence conditions mean every credit has to stay readable, so this is made small
      and quiet rather than truncated. */
-  .roads-overlay{mix-blend-mode:multiply;filter:saturate(.25) contrast(1.15)}
+  .roads-overlay{mix-blend-mode:multiply;
+    filter:grayscale(1) brightness(1.22) contrast(2.3)}
   .basemap .row.extra{margin-top:6px}
   .basemap .row.extra button.on{background:var(--slate);border-color:var(--slate);color:#fff}
   .leaflet-control-attribution{font-size:9.5px!important;line-height:1.35;
@@ -470,7 +471,7 @@ const plainLayer = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",
 /* OpenStreetMap blended with multiply: the dark roads, buildings and names show
    through while the pale background disappears. Useful over LiDAR and imagery. */
 const roadsLayer = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",
-  { maxZoom:19, opacity:.9, className:"roads-overlay", pane:"wmsPane",
+  { maxZoom:19, opacity:1, className:"roads-overlay", pane:"wmsPane",
     attribution:'Roads &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors' });
 /* The tithe survey is served by the Somerset HER in British National Grid, so it can
    only be built once proj4 has loaded. */
@@ -1080,7 +1081,7 @@ const GROUPS = [
       ["Mining & water", ["osm-mining","flood","osm-water"]],
       ["Geological designations", ["sssi"]]
     ],
-    on:["bgs-bedrock","osm-caves","osm-mining","osm-water","sssi"],
+    on:["bgs-bedrock","osm-caves","osm-mining","flood","osm-water","sssi"],
     highlight:{layer:"osm-caves", title:"Caves & swallets", name:["name"]} },
 
   { key:"history", title:"History", colour:"#795548", bg:"#F0E9E4",
