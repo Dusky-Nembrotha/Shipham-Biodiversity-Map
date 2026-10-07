@@ -70,12 +70,16 @@
   /* A label is a hint, not a banner. They are drawn over the one thing the map
      is for, so: small, wrapped to a few words a line, and narrow enough that a
      long name cannot lie across a quarter of a phone screen. */
+  /* Two lines at most, then an ellipsis. Wrapping freely turned "Churchill
+     Post Office and Stores" into a five-line tower that covered more map than
+     the old single long line did; the full name is in the popup. */
   .feat-label{background:rgba(255,255,255,.88);font-weight:700;font-size:.62rem;
-    line-height:1.15;padding:1px 5px;border-radius:7px;box-shadow:0 1px 3px rgba(0,0,0,.18);
-    white-space:normal;max-width:11rem;text-align:center;border-width:1.25px;border-style:solid}
+    line-height:1.2;padding:1px 5px;border-radius:7px;box-shadow:0 1px 3px rgba(0,0,0,.18);
+    white-space:normal;max-width:10rem;text-align:center;border-width:1.25px;border-style:solid;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
   @media (max-width:700px){
-    .feat-label{font-size:.56rem;max-width:7.5rem;padding:1px 4px;
-      background:rgba(255,255,255,.82)}
+    .feat-label{font-size:.55rem;max-width:8.5rem;padding:0 4px;
+      background:rgba(255,255,255,.8);box-shadow:0 1px 2px rgba(0,0,0,.14)}
   }
   .feat-label::before{display:none!important}
   .proj-label.leaflet-tooltip-top::before,.proj-label.leaflet-tooltip-bottom::before,.proj-label.leaflet-tooltip-left::before,.proj-label.leaflet-tooltip-right::before{display:none}
