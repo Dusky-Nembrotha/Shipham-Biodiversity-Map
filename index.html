@@ -1003,7 +1003,7 @@ const LAYERS = {
   /* --- Somerset HER, served live in British National Grid --- */
   "her-monuments": {kind:"wms", info:true, srs:"27700", t:"HER records", s:"monuments, findspots, kilns \u00b7 Somerset HER",
                     c:"#AD1457", url:"https://www.somersetheritage.org.uk/herwms", wms:"Monuments", opacity:.9, attribution:'Somerset HER &copy; <a href="https://swheritage.org.uk/" target="_blank" rel="noopener">South West Heritage Trust</a>'},
-  "her-tithebounds":{kind:"wms", info:true, srs:"27700", t:"Tithe field boundaries", s:"Somerset HER", c:"#6D4C41",
+  "her-tithebounds":{kind:"wms", info:true, srs:"27700", t:"Tithe field boundaries", s:"1840s parcels \u00b7 best with the tithe base map", c:"#6D4C41",
                     url:"https://www.somersetheritage.org.uk/herwms", wms:"TitheBounds", opacity:.9, attribution:'Somerset HER &copy; <a href="https://swheritage.org.uk/" target="_blank" rel="noopener">South West Heritage Trust</a>'},
   "her-ap1946":    {kind:"wms", srs:"27700", t:"RAF aerial photos (1946)", s:"Somerset HER", c:"#546E7A",
                     url:"https://www.somersetheritage.org.uk/herwms", wms:"Ap1946", opacity:1, attribution:'Somerset HER &copy; <a href="https://swheritage.org.uk/" target="_blank" rel="noopener">South West Heritage Trust</a>'},
@@ -1098,7 +1098,7 @@ const GROUPS = [
       ["Industry", ["osm-mining"]],
       ["Old routes", ["prow"]]
     ],
-    on:["her-monuments","her-tithebounds","scheduled-monuments","osm-historic-features","listed-buildings","osm-settlements","osm-mining","prow"],
+    on:["her-monuments","scheduled-monuments","osm-historic-features","listed-buildings","osm-settlements","osm-mining","prow"],
     highlight:{layer:"osm-historic-features", title:"Historic features", name:["name","historic"]} },
 
   { key:"parish", title:"Parish Assets", colour:"#1565C0", bg:"#E3EDF8",
