@@ -989,6 +989,9 @@ const LAYERS = {
                 c:"#4E5A52", kind:"roads", n:["name"], heavy:true,
                 attribution:'Roads &copy; Crown copyright, OS Open Roads (OGL) \u00b7 buildings &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors'},
   trees:       {f:"trees",       t:"Trees & woodland",  s:"ancient woodland, woods and tree groups", c:"#2E7D32", kind:"wash", colorBy:["treeType"], n:["detail"], heavy:true},
+  ponds:       {f:"ponds", t:"Ponds & dewponds", s:"Somerset HER \u00b7 add more as you find them",
+                c:"#0277BD", kind:"point", label:true, n:["name"], link:"url",
+                attribution:'Pond records &copy; <a href="https://swheritage.org.uk/" target="_blank" rel="noopener">South West Heritage Trust</a> (Somerset HER)'},
   "priority-habitats": {f:"priority-habitats", t:"Priority habitats", s:"Habitat inventory · Natural England", c:"#43A047", kind:"wash", colorBy:["MainHabs"], n:["MainHabs"]},
   lnrs:        {f:"lnrs",        t:"Nature recovery (LNRS)",   s:"Somerset habitat priority areas", c:"#4E8E63", kind:"wash", fillProp:"fill", n:["cat"],
                 attribution:'Somerset LNRS &copy; <a href="https://www.somersetwildlife.org/" target="_blank" rel="noopener">Somerset Wildlife Trust</a>'},
@@ -1039,8 +1042,9 @@ const LAYERS = {
   "osm-viewpoints":{f:"osm-viewpoints",t:"Viewpoints & information", s:"OpenStreetMap",     c:"#0097A7", kind:"point", n:["name","tourism"]},
 
   /* --- Somerset HER, served live in British National Grid --- */
-  "her-monuments": {kind:"wms", info:true, srs:"27700", t:"HER records", s:"monuments, findspots, kilns \u00b7 Somerset HER",
-                    c:"#AD1457", url:"https://www.somersetheritage.org.uk/herwms", wms:"Monuments", opacity:.9, attribution:'Somerset HER &copy; <a href="https://swheritage.org.uk/" target="_blank" rel="noopener">South West Heritage Trust</a>'},
+  "her-records": {f:"her-records", t:"HER records", s:"monuments, findspots, kilns \u00b7 Somerset HER",
+                c:"#AD1457", kind:"area", n:["name"], link:"url",
+                attribution:'Somerset HER &copy; <a href="https://swheritage.org.uk/" target="_blank" rel="noopener">South West Heritage Trust</a>'},
   "her-tithebounds":{kind:"wms", info:true, srs:"27700", t:"Tithe field boundaries", s:"1840s parcels \u00b7 best with the tithe base map", c:"#6D4C41",
                     url:"https://www.somersetheritage.org.uk/herwms", wms:"TitheBounds", opacity:.9, attribution:'Somerset HER &copy; <a href="https://swheritage.org.uk/" target="_blank" rel="noopener">South West Heritage Trust</a>'},
   "her-ap1946":    {kind:"wms", srs:"27700", t:"RAF aerial photos (1946)", s:"Somerset HER", c:"#546E7A",
@@ -1083,9 +1087,9 @@ const GROUPS = [
       ["Living record", ["inat","projects"]],
       ["Protected sites", ["sssi","nnr"]],
       ["Habitats", ["priority-habitats","lnrs"]],
-      ["Trees & water", ["trees","osm-trees","flood"]]
+      ["Trees & water", ["trees","osm-trees","ponds","flood"]]
     ],
-    on:["inat","projects","sssi","nnr","trees","osm-trees","flood"],
+    on:["inat","projects","sssi","nnr","trees","osm-trees","ponds","flood"],
     highlight:{layer:"sssi", title:"Protected sites nearby", name:["SSSI_NAME","NAME"]} },
 
   { key:"landscape", title:"Landscape & Heritage", colour:"#6A1B9A", bg:"#F0E8F5",
@@ -1115,10 +1119,9 @@ const GROUPS = [
     sections:[
       ["The rock beneath", ["bgs-bedrock","bgs-superficial"]],
       ["Caves, mines & karst", ["mcra-caves","mcra-karst","mcra-mines","mcra-collapses","mcra-other"]],
-      ["Water", ["flood"]],
-      ["Geological designations", ["sssi"]]
+      ["Water", ["flood"]]
     ],
-    on:["bgs-bedrock","mcra-caves","mcra-karst","mcra-mines","flood","sssi","roads-buildings"],
+    on:["bgs-bedrock","mcra-caves","mcra-karst","mcra-mines","flood","roads-buildings"],
     highlight:{layer:"mcra-caves", title:"Caves nearby", name:["name"], sub:["type"]} },
 
   { key:"history", title:"History", colour:"#795548", bg:"#F0E9E4",
@@ -1129,13 +1132,13 @@ const GROUPS = [
     icon:'<path d="M5 21V8l7-4 7 4v13"/><path d="M9 21v-6h6v6"/>',
     base:"nls",
     sections:[
-      ["Somerset HER", ["her-monuments","her-tithebounds","her-ap1946"]],
+      ["Somerset HER", ["her-records","her-tithebounds","her-ap1946"]],
       ["Ancient & archaeological", ["scheduled-monuments","osm-historic-features"]],
       ["Buildings & places", ["listed-buildings","osm-settlements"]],
       ["Industry", ["mcra-mines"]],
       ["Old routes", ["prow"]]
     ],
-    on:["her-monuments","scheduled-monuments","osm-historic-features","listed-buildings","osm-settlements","mcra-mines","prow"],
+    on:["her-records","scheduled-monuments","osm-historic-features","listed-buildings","osm-settlements","mcra-mines","prow"],
     highlight:{layer:"osm-historic-features", title:"Historic features", name:["name","historic"]} },
 
   { key:"parish", title:"Parish Assets", colour:"#1565C0", bg:"#E3EDF8",
@@ -1171,7 +1174,7 @@ function habColor(name){
   if(!(name in _palMap)){ _palMap[name]=_pal[_palI%_pal.length]; _palI++; }
   return _palMap[name];
 }
-const HIDE=/^(fill|cat|OBJECTID|GlobalID|Shape|FID|Easting|Northing|CaptureScale|UID|Version|THEMID|THEME|PERIMETER|X_COORD|Y_COORD|ListEntry|HYPERLINK|REF_CODE|MEASURE|LABEL|HabCodes|SHAPE_|objectid|hyperlink|gml_id|ogc_fid|Incid|Habdefver|PriDet|Descrip|UNIQUEID|MAPPINGARE|CACHAIR|ISSU|LATITUDE|LONGITUDE|GRID_REF|SAC_CODE|NGR|ROW_ID|SHAPE|InterQual|S\d|Orch|Habdef|Mapped|Confid|bus|Created|LastEdit|Last_Edit|NonTO|Globalid|Verified|Modified|img|url|id)/i;
+const HIDE=/^(fill|cat|OBJECTID|GlobalID|Shape|FID|Easting|Northing|CaptureScale|UID|Version|THEMID|THEME|PERIMETER|X_COORD|Y_COORD|ListEntry|HYPERLINK|REF_CODE|MEASURE|LABEL|HabCodes|SHAPE_|objectid|hyperlink|gml_id|ogc_fid|Incid|Habdefver|PriDet|Descrip|UNIQUEID|MAPPINGARE|CACHAIR|ISSU|LATITUDE|LONGITUDE|GRID_REF|SAC_CODE|NGR|ROW_ID|SHAPE|InterQual|S\d|Orch|Habdef|Mapped|Confid|bus|Created|LastEdit|Last_Edit|NonTO|Globalid|Verified|Modified|img|url|id|prn|ar_or_ev)/i;
 /* Values arrive as raw tags, epoch milliseconds and long floats; make them readable. */
 function prettyVal(k,v){
   if(typeof v==="number"){
@@ -1652,10 +1655,14 @@ function infoText(html){
   doc.querySelectorAll("script,style").forEach(n=>n.remove());
   return (doc.body?doc.body.textContent:"").replace(/\s+/g," ").trim();
 }
+let _popupAt=0;
+map.on("popupopen",()=>{ _popupAt=Date.now(); });
 map.on("click", async e=>{
   if(e.originalEvent && e.originalEvent.__featureHit) return;   // a feature answered already
-  await new Promise(r=>setTimeout(r,70));                       // let any feature popup open first
-  if(map._popup && map._popup.isOpen()) return;                 // something nearer answered
+  const asked=Date.now();
+  await new Promise(r=>setTimeout(r,150));                      // give a feature time to answer
+  if(_popupAt>=asked-30) return;                                // a feature's popup opened: stand down
+  if(map._popup && map._popup.isOpen()) return;
   const live=Object.keys(LAYERS).filter(id=>LAYERS[id].kind==="wms" && LAYERS[id].info
                  && built[id] && map.hasLayer(built[id]));
   if(!live.length) return;
@@ -1669,12 +1676,10 @@ map.on("click", async e=>{
       if(t && t.length>1) parts.push(`<b style="color:${d.c}">${esc(d.t)}</b><div>${esc(t).slice(0,600)}</div>`);
     }catch(_){
       // blocked cross-origin - show the service's own reply in a frame
-      // The HER sends no CORS header, so its reply cannot be read and restyled here.
+      // Some services send no CORS header, so their reply cannot be read and restyled.
       // A link keeps the popup in the app's own styling instead of framing their page.
       parts.push(`<b style="color:${d.c}">${esc(d.t)}</b>`
-        +`<div style="margin-top:3px;color:var(--muted)">Records for this spot are held by the Somerset HER.</div>`
-        +`<div style="margin-top:5px"><a href="${esc(url)}" target="_blank" rel="noopener">Open the records at this point →</a></div>`
-        +`<div style="margin-top:3px"><a href="https://www.somersetheritage.org.uk/" target="_blank" rel="noopener">Search the full HER →</a></div>`);
+        +`<div style="margin-top:5px"><a href="${esc(url)}" target="_blank" rel="noopener">Open this service's record for the point →</a></div>`);
     }
   }
   if(parts.length) L.popup({minWidth:220,maxWidth:300})
