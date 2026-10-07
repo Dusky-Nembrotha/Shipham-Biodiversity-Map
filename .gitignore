@@ -1,3 +1,7 @@
 # Bulk source data dropped here for processing — never committed.
 # Only the clipped, parish-sized GeoJSON that comes out of it goes in layers/.
 _incoming/
+_probe.html
+_p_*.html
+_q_*.html
+_empty.html

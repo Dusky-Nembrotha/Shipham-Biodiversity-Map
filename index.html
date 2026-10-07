@@ -67,8 +67,16 @@
     margin:7px 0 3px;background:var(--stone);border:1px solid var(--line)}
   .pop-cred{font-size:.6rem;color:var(--muted);margin-bottom:5px;line-height:1.3}
   .pop-cred a{color:var(--muted)}
-  .feat-label{background:rgba(255,255,255,.9);font-weight:700;font-size:.66rem;padding:1px 6px;
-    border-radius:7px;box-shadow:0 1px 3px rgba(0,0,0,.22);white-space:nowrap;border-width:1.5px;border-style:solid}
+  /* A label is a hint, not a banner. They are drawn over the one thing the map
+     is for, so: small, wrapped to a few words a line, and narrow enough that a
+     long name cannot lie across a quarter of a phone screen. */
+  .feat-label{background:rgba(255,255,255,.88);font-weight:700;font-size:.62rem;
+    line-height:1.15;padding:1px 5px;border-radius:7px;box-shadow:0 1px 3px rgba(0,0,0,.18);
+    white-space:normal;max-width:11rem;text-align:center;border-width:1.25px;border-style:solid}
+  @media (max-width:700px){
+    .feat-label{font-size:.56rem;max-width:7.5rem;padding:1px 4px;
+      background:rgba(255,255,255,.82)}
+  }
   .feat-label::before{display:none!important}
   .proj-label.leaflet-tooltip-top::before,.proj-label.leaflet-tooltip-bottom::before,.proj-label.leaflet-tooltip-left::before,.proj-label.leaflet-tooltip-right::before{display:none}
   .brand p{margin:.5rem 0 0;font-size:.77rem;color:var(--muted);line-height:1.3}
@@ -1011,7 +1019,11 @@ const LAYERS = {
                 attribution:'Roads &copy; Crown copyright, OS Open Roads (OGL) \u00b7 buildings &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors'},
   trees:       {f:"trees",       t:"Trees & woodland",  s:"ancient woodland, woods and tree groups", c:"#2E7D32", kind:"wash", colorBy:["treeType"], n:["detail"], heavy:true},
   ponds:       {f:"ponds", t:"Ponds & dewponds", s:"Somerset HER \u00b7 add more as you find them",
-                c:"#0277BD", kind:"point", label:true, n:["name"], link:"url",
+                /* No permanent label: most are "Pond" or "Dewpond", which says
+                   nothing the blue dot has not already said, and eleven of them
+                   shouting it crowds the fields they sit in. The name is still
+                   in the popup. */
+                c:"#0277BD", kind:"point", n:["name"], link:"url",
                 attribution:'Pond records &copy; <a href="https://swheritage.org.uk/" target="_blank" rel="noopener">South West Heritage Trust</a> (Somerset HER)'},
   "priority-habitats": {f:"priority-habitats", t:"Priority habitats", s:"Habitat inventory · Natural England", c:"#43A047", kind:"wash", colorBy:["MainHabs"], n:["MainHabs"]},
   lnrs:        {f:"lnrs",        t:"Nature recovery (LNRS)",   s:"Somerset habitat priority areas", c:"#4E8E63", kind:"wash", fillProp:"fill", n:["cat"],
@@ -1678,8 +1690,42 @@ function infoText(html){
 }
 let _popupAt=0;
 map.on("popupopen",()=>{ _popupAt=Date.now(); });
+/* The nearest clickable point feature to a click, within a few pixels.
+   Leaflet's canvas usually answers for its own features and stops the map
+   click before it gets here - but when it does not, the raster lookup below
+   ran instead and a mine shaft opened the bedrock geology. Asking directly
+   does not depend on which listener fires first. */
+const TOUCH = (typeof L!=="undefined" && L.Browser && L.Browser.touch)
+           || (window.matchMedia && matchMedia("(pointer:coarse)").matches);
+function pointFeatureNear(latlng, px){
+  const at=map.latLngToContainerPoint(latlng);
+  let best=null, bestDist=px;
+  for(const id of Object.keys(built)){
+    const d=LAYERS[id];
+    if(!d || d.kind==="wms") continue;
+    const lyr=built[id];
+    if(!lyr || !map.hasLayer(lyr) || !lyr.eachLayer) continue;
+    const group=lyr._gj||lyr;
+    try{
+      group.eachLayer(l=>{
+        if(!l.getLatLng || !l.getPopup || !l.getPopup()) return;
+        const dist=map.latLngToContainerPoint(l.getLatLng()).distanceTo(at);
+        if(dist<=bestDist){ bestDist=dist; best=l; }
+      });
+    }catch(_){}
+  }
+  return best;
+}
+
 map.on("click", async e=>{
   if(e.originalEvent && e.originalEvent.__featureHit) return;   // a feature answered already
+  /* A point near the finger wins over whatever raster lies beneath it.
+     Measured rather than guessed: a tap 25 px from an isolated mine shaft used
+     to open the bedrock geology, which is the whole complaint. A fingertip
+     covers about 40 px of a phone screen, so touch gets a wider net than a
+     mouse pointer does. */
+  const near=pointFeatureNear(e.latlng, TOUCH ? 34 : 22);
+  if(near){ near.openPopup(); return; }
   const asked=Date.now();
   await new Promise(r=>setTimeout(r,150));                      // give a feature time to answer
   if(_popupAt>=asked-30) return;                                // a feature's popup opened: stand down
